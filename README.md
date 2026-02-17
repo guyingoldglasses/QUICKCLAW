@@ -7,6 +7,7 @@ One-click OpenClaw installer for macOS. Get your AI agent running in under 5 min
 | File | What it does |
 |------|-------------|
 | `QuickClaw Install.command` | Interactive installer — sets up Node.js, OpenClaw, Dashboard, Antfarm, and all launcher scripts |
+| `QuickClaw Launch.command` | Quick launcher — finds your install (local or SSD) and starts everything |
 | `QuickClaw Doctor.command` | Health check — diagnoses issues with your installation |
 
 ## Quick Start
@@ -14,7 +15,9 @@ One-click OpenClaw installer for macOS. Get your AI agent running in under 5 min
 1. Download this folder
 2. Double-click **QuickClaw Install.command**
 3. Follow the prompts (choose Mac or SSD, enter API keys, pick your model)
-4. Done! Double-click **Start OpenClaw.command** in your install folder
+4. Say **yes** when asked to launch — the dashboard opens automatically!
+
+**Already installed?** Double-click **QuickClaw Launch.command** — it finds your install automatically.
 
 ## What Gets Installed
 
@@ -55,6 +58,8 @@ OpenClaw/
 └── backups/                  ← Your backups
 ```
 
+All launcher scripts auto-detect their install location — you can move the folder or rename your SSD and everything still works.
+
 ## Dashboard
 
 After starting, your browser opens automatically to the Command Center:
@@ -72,6 +77,8 @@ https://guyingoldglasses.com/install
 ## Troubleshooting
 
 Double-click **QuickClaw Doctor.command** to run a full diagnostic.
+
+Dashboard not opening? The server needs a few seconds to start — the launcher waits automatically and retries. If it still doesn't open, check the terminal output for the dashboard URL.
 
 ## Links
 

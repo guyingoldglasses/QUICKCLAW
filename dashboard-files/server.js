@@ -1,34 +1,49 @@
 /**
- * OpenClaw Command Center — Mac SSD Edition v1.5
- * Single-profile dashboard for portable OpenClaw installation
+ * OpenClaw Command Center v1.6
+ * Dashboard server — auto-detects install location (local Mac or SSD)
+ *
+ * Path detection:
+ *   This file lives at <INSTALL_ROOT>/dashboard/server.js
+ *   So INSTALL_ROOT = path.resolve(__dirname, '..')
+ *   Workspace, env, logs, backups are all relative to INSTALL_ROOT.
+ *   ~/.openclaw is always the config dir (OpenClaw standard).
  */
 const express = require('express');
 const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const WebSocket = require('ws');
 const http = require('http');
 
-// ═══ MAC-SPECIFIC PATHS ═══
-const SSD_ROOT = '/Volumes/STORAGE/OpenClaw';
+// ═══ AUTO-DETECT PATHS ═══
+// Derive everything from where this file actually lives
+const INSTALL_ROOT = process.env.OPENCLAW_ROOT || path.resolve(__dirname, '..');
 const CONFIG_DIR = path.join(process.env.HOME, '.openclaw');
-const WORKSPACE = path.join(SSD_ROOT, 'USER FILES');
+const WORKSPACE = path.join(INSTALL_ROOT, 'workspace');
 const PORT = process.env.DASHBOARD_PORT || 18810;
+
+// Detect if running from external volume
+const IS_SSD = INSTALL_ROOT.startsWith('/Volumes/');
+const VOLUME_NAME = IS_SSD ? INSTALL_ROOT.split('/')[2] : null;
+
 const AUTH_TOKEN = process.env.DASHBOARD_TOKEN || (() => {
-  const tf = path.join(SSD_ROOT, 'dashboard', '.auth-token');
+  const tf = path.join(INSTALL_ROOT, 'dashboard', '.auth-token');
   if (fs.existsSync(tf)) return fs.readFileSync(tf, 'utf-8').trim();
   const t = crypto.randomBytes(24).toString('hex');
-  fs.writeFileSync(tf, t); fs.chmodSync(tf, 0o600);
+  try { fs.writeFileSync(tf, t); fs.chmodSync(tf, 0o600); } catch {}
   return t;
 })();
+
+// Read gateway port from config
+const cfgBoot = (() => { try { return JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, 'openclaw.json'), 'utf-8')); } catch { return {}; } })();
+const GATEWAY_PORT = cfgBoot?.gateway?.port || 18789;
 
 const PROFILE = {
   id: 'main',
   configDir: CONFIG_DIR,
   workspace: WORKSPACE,
-  port: 18789,
-  name: 'OpenClaw SSD'
+  port: GATEWAY_PORT,
+  name: IS_SSD ? 'OpenClaw SSD' : 'OpenClaw'
 };
 
 const app = express();
@@ -43,14 +58,14 @@ function auth(req, res, next) {
   next();
 }
 
-const FNM_NODE = path.join(SSD_ROOT, 'env', '.fnm', 'aliases', 'default', 'bin');
-const NPM_GLOBAL = path.join(SSD_ROOT, 'env', '.npm-global', 'bin');
+const FNM_NODE = path.join(INSTALL_ROOT, 'env', '.fnm', 'aliases', 'default', 'bin');
+const NPM_GLOBAL = path.join(INSTALL_ROOT, 'env', '.npm-global', 'bin');
 const EP = `${NPM_GLOBAL}:${FNM_NODE}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`;
 const BASE_ENV = {
   ...process.env,
   PATH: EP,
-  FNM_DIR: path.join(SSD_ROOT, 'env', '.fnm'),
-  NPM_CONFIG_PREFIX: path.join(SSD_ROOT, 'env', '.npm-global'),
+  FNM_DIR: path.join(INSTALL_ROOT, 'env', '.fnm'),
+  NPM_CONFIG_PREFIX: path.join(INSTALL_ROOT, 'env', '.npm-global'),
   OPENCLAW_CONFIG_DIR: CONFIG_DIR,
   HOME: process.env.HOME
 };
@@ -86,12 +101,12 @@ function maskKey(k) { return (!k || k.length < 8) ? '••••••••' :
 function cleanCli(s) { return (s || '').replace(/.*ExperimentalWarning.*\n?/g, '').replace(/.*🦞.*\n?/g, '').replace(/\(Use `node.*\n?/g, '').replace(/.*OpenAI-compatible.*\n?/g, '').trim(); }
 
 function isGatewayRunning() {
-  const r = run('pgrep -f "openclaw gateway"', { timeout: 3000 });
+  const r = run('pgrep -f "openclaw.gateway"', { timeout: 3000 });
   return r.ok && r.output.trim().length > 0;
 }
 
 function getGatewayPid() {
-  const r = run('pgrep -f "openclaw gateway"', { timeout: 3000 });
+  const r = run('pgrep -f "openclaw.gateway"', { timeout: 3000 });
   return r.ok ? r.output.trim().split('\n')[0] : null;
 }
 
@@ -111,6 +126,11 @@ function findSoul() {
   return null;
 }
 
+// ═══ HEALTH CHECK (used by launcher scripts) ═══
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, port: PORT, timestamp: Date.now() });
+});
+
 // ═══ PROFILES (single profile, compatible API) ═══
 app.get('/api/profiles', auth, (req, res) => {
   const cfg = readJSON(path.join(CONFIG_DIR, 'openclaw.json')) || {};
@@ -125,7 +145,7 @@ app.get('/api/profiles', auth, (req, res) => {
   const cronDir = path.join(CONFIG_DIR, 'cron');
   try { if (fs.existsSync(cronDir)) cronCount = fs.readdirSync(cronDir).filter(f => f.endsWith('.json') && f !== 'runs').length; } catch {}
   res.json({ profiles: [{
-    id: 'main', name: cfg?.agents?.defaults?.name || 'OpenClaw SSD', port: PROFILE.port,
+    id: 'main', name: cfg?.meta?.name || cfg?.agents?.defaults?.name || PROFILE.name, port: PROFILE.port,
     service: 'local', status, uptime: status === 'running' ? getUptime() : null,
     skillCount: sc, hasSoul: !!findSoul(),
     hasMemory: fs.existsSync(path.join(WORKSPACE, 'MEMORY.md')),
@@ -138,7 +158,6 @@ app.get('/api/profiles', auth, (req, res) => {
 // Service control (Mac — process-based, not systemd)
 app.post('/api/profiles/:id/start', auth, (req, res) => {
   if (isGatewayRunning()) return res.json({ ok: true, status: 'running', message: 'Already running' });
-  // Start in background
   const child = spawn('openclaw', ['gateway'], {
     cwd: WORKSPACE, detached: true, stdio: ['ignore', 'ignore', 'ignore'],
     env: BASE_ENV
@@ -147,11 +166,11 @@ app.post('/api/profiles/:id/start', auth, (req, res) => {
   setTimeout(() => { res.json({ ok: true, status: isGatewayRunning() ? 'running' : 'starting' }); }, 2000);
 });
 app.post('/api/profiles/:id/stop', auth, (req, res) => {
-  run('pkill -f "openclaw gateway"', { timeout: 5000 });
+  run('pkill -f "openclaw.gateway"', { timeout: 5000 });
   setTimeout(() => { res.json({ ok: true, status: isGatewayRunning() ? 'running' : 'stopped' }); }, 1000);
 });
 app.post('/api/profiles/:id/restart', auth, (req, res) => {
-  run('pkill -f "openclaw gateway"', { timeout: 5000 });
+  run('pkill -f "openclaw.gateway"', { timeout: 5000 });
   setTimeout(() => {
     const child = spawn('openclaw', ['gateway'], {
       cwd: WORKSPACE, detached: true, stdio: ['ignore', 'ignore', 'ignore'],
@@ -175,7 +194,6 @@ app.put('/api/profiles/:id/config', auth, (req, res) => {
 
 // ═══ ENV / API KEYS ═══
 app.get('/api/profiles/:id/env', auth, (req, res) => {
-  // OpenClaw on Mac stores credentials in ~/.openclaw/credentials/
   const credDir = path.join(CONFIG_DIR, 'credentials');
   const vars = {};
   try {
@@ -190,10 +208,8 @@ app.get('/api/profiles/:id/env', auth, (req, res) => {
       });
     }
   } catch {}
-  // Also check .env if exists
   const envFile = path.join(CONFIG_DIR, '.env');
   Object.assign(vars, readEnv(envFile));
-  // Also pull from config skills entries
   const cfg = readJSON(path.join(CONFIG_DIR, 'openclaw.json')) || {};
   if (cfg.skills?.entries) {
     Object.entries(cfg.skills.entries).forEach(([sk, sv]) => {
@@ -230,6 +246,10 @@ app.get('/api/profiles/:id/skills', auth, (req, res) => {
 app.delete('/api/profiles/:id/skills/:skill', auth, (req, res) => {
   const sp = path.join(WORKSPACE, 'skills', req.params.skill);
   run('rm -rf "' + sp + '"');
+  res.json({ ok: true });
+});
+app.post('/api/profiles/:id/skills/:skill/copy', auth, (req, res) => {
+  // stub for multi-profile compat
   res.json({ ok: true });
 });
 
@@ -377,7 +397,7 @@ app.post('/api/profiles/:id/reset', auth, (req, res) => {
     const sp = findSoul();
     if (sp && fs.existsSync(sp)) {
       fs.copyFileSync(sp, path.join(backupDir, path.basename(sp)));
-      fs.writeFileSync(sp, '# OpenClaw SSD\n\nYou are a helpful AI assistant.\n');
+      fs.writeFileSync(sp, '# OpenClaw Agent\n\nYou are a helpful AI assistant.\n');
       actions.push('Soul reset to default');
     }
   }
@@ -432,10 +452,7 @@ app.get('/api/profiles/:id/cron/runs', auth, (req, res) => { const r = run('open
 
 // ═══ ACTIVITY FEED ═══
 app.get('/api/profiles/:id/activity', auth, (req, res) => {
-  // On Mac, read from openclaw logs
-  const logDir = path.join(SSD_ROOT, 'logs');
   const events = [];
-  // Try openclaw logs command
   const r = run('openclaw logs --lines 50 2>/dev/null', { timeout: 8000 });
   if (r.ok) {
     r.output.split('\n').forEach(line => {
@@ -457,11 +474,12 @@ app.get('/api/profiles/:id/activity', auth, (req, res) => {
 app.get('/api/alerts', auth, (req, res) => {
   const alerts = [];
   if (!isGatewayRunning()) alerts.push({ type: 'error', message: 'Gateway is not running', icon: '⚠️' });
-  // Check SSD space
-  const disk = run("df -h /Volumes/STORAGE | tail -1 | awk '{print $5}'").output?.replace('%', '');
-  if (parseInt(disk) > 85) alerts.push({ type: 'warn', message: 'SSD usage at ' + disk + '%', icon: '💾' });
-  // Check if SSD is mounted
-  if (!fs.existsSync(SSD_ROOT)) alerts.push({ type: 'error', message: 'SSD not mounted!', icon: '🔌' });
+  // Check disk space — adapt to install location
+  const diskTarget = IS_SSD ? '/Volumes/' + VOLUME_NAME : process.env.HOME;
+  const disk = run("df -h '" + diskTarget + "' | tail -1 | awk '{print $5}'").output?.replace('%', '');
+  if (parseInt(disk) > 85) alerts.push({ type: 'warn', message: 'Disk usage at ' + disk + '%', icon: '💾' });
+  // Check install root exists (catches unmounted SSD)
+  if (!fs.existsSync(INSTALL_ROOT)) alerts.push({ type: 'error', message: IS_SSD ? 'SSD not mounted!' : 'Install directory missing!', icon: '🔌' });
   res.json({ alerts });
 });
 
@@ -473,18 +491,20 @@ app.get('/api/profiles/:id/logs', auth, (req, res) => {
 
 // ═══ SYSTEM ═══
 app.get('/api/system', auth, (req, res) => {
+  const diskTarget = IS_SSD ? '/Volumes/' + VOLUME_NAME : process.env.HOME;
   res.json({
     hostname: run('hostname').output,
     nodeVersion: run('node --version').output,
     uptime: run('uptime').output,
-    diskUsage: run("df -h /Volumes/STORAGE | tail -1 | awk '{print $3\"/\"$2\" (\"$5\" used)\"}'").output,
+    diskUsage: run("df -h '" + diskTarget + "' | tail -1 | awk '{print $3\"/\"$2\" (\"$5\" used)\"}'").output,
     memInfo: run("vm_stat | awk '/Pages active/ {printf \"%.0fMB active\", $3*4096/1048576}'").output || 'N/A',
     swapInfo: run("sysctl vm.swapusage 2>/dev/null | awk '{print $4}'").output || 'N/A',
     loadAvg: run("sysctl -n vm.loadavg 2>/dev/null").output || run("uptime | awk -F'load averages: ' '{print $2}'").output,
     openclawVersion: run('openclaw --version 2>/dev/null').output,
     dashboardPort: PORT,
     profiles: 1,
-    platform: 'macOS SSD'
+    platform: IS_SSD ? 'macOS SSD' : 'macOS Local',
+    installRoot: INSTALL_ROOT
   });
 });
 
@@ -492,22 +512,15 @@ app.get('/api/system', auth, (req, res) => {
 app.get('/api/security/audit', auth, (req, res) => {
   const a = { timestamp: new Date().toISOString(), checks: [] };
   function add(c, n, s, d, sv) { a.checks.push({ category: c, name: n, status: s, detail: d, severity: sv }); }
-  // Check config dir permissions
   try { const st = fs.statSync(CONFIG_DIR); add('Files', 'Config dir permissions', (st.mode & 0o077) === 0 ? 'pass' : 'warn', 'Mode: ' + (st.mode & 0o777).toString(8), 'high'); } catch { add('Files', 'Config dir', 'fail', 'Cannot read', 'high'); }
-  // Check credentials dir
   const credDir = path.join(CONFIG_DIR, 'credentials');
   try { const st = fs.statSync(credDir); add('Files', 'Credentials permissions', (st.mode & 0o077) === 0 ? 'pass' : 'warn', 'Mode: ' + (st.mode & 0o777).toString(8), 'high'); } catch { add('Files', 'Credentials dir', 'info', 'Not found', 'medium'); }
-  // Check gateway auth
   const cfg = readJSON(path.join(CONFIG_DIR, 'openclaw.json')) || {};
   add('Gateway', 'Auth mode', cfg.gateway?.auth?.mode === 'token' ? 'pass' : 'warn', cfg.gateway?.auth?.mode || 'none', 'critical');
-  // Check DM policy
   add('Telegram', 'DM Policy', cfg.channels?.telegram?.dmPolicy === 'pairing' ? 'pass' : 'warn', cfg.channels?.telegram?.dmPolicy || 'open', 'high');
-  // Check SSD mounted
-  add('Storage', 'SSD mounted', fs.existsSync(SSD_ROOT) ? 'pass' : 'fail', fs.existsSync(SSD_ROOT) ? 'Mounted' : 'NOT mounted', 'critical');
-  // Check firewall (macOS)
+  add('Storage', 'Install directory', fs.existsSync(INSTALL_ROOT) ? 'pass' : 'fail', fs.existsSync(INSTALL_ROOT) ? 'Accessible' : 'NOT accessible', 'critical');
   const fw = run('/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null');
   add('Network', 'macOS Firewall', fw.output?.includes('enabled') ? 'pass' : 'warn', fw.output?.includes('enabled') ? 'Enabled' : 'Check System Settings', 'medium');
-  // Run openclaw security audit
   const oc = run('openclaw security audit 2>/dev/null', { timeout: 15000 });
   if (oc.ok) add('OpenClaw', 'Security audit', 'pass', cleanCli(oc.output).slice(0, 100), 'high');
   const cn = { pass: 0, warn: 0, fail: 0, info: 0 };
@@ -528,11 +541,10 @@ app.post('/api/updates/cli/upgrade', auth, (req, res) => {
   const v = run('openclaw --version 2>/dev/null');
   res.json({ ok: r.ok, version: v.output });
 });
-// No git workspaces on Mac SSD - stub
 app.get('/api/updates/workspace/:id', auth, (req, res) => { res.json({ isGit: false }); });
 app.post('/api/updates/workspace/:id/pull', auth, (req, res) => { res.json({ ok: false, output: 'Not a git workspace' }); });
 
-// ═══ ANTFARM (stub - not installed on Mac) ═══
+// ═══ ANTFARM ═══
 app.get('/api/antfarm/status', auth, (req, res) => {
   const i = run('which antfarm 2>/dev/null');
   if (!i.ok || !i.output) return res.json({ installed: false });
@@ -550,13 +562,13 @@ app.post('/api/antfarm/dashboard/:action', auth, (req, res) => { res.json({ ok: 
 app.get('/api/profiles/:id/backup', auth, (req, res) => {
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const tmp = '/tmp/oc-backup-' + ts + '.tar.gz';
-  run('tar -czf "' + tmp + '" -C "' + process.env.HOME + '" .openclaw -C "' + SSD_ROOT + '" "USER FILES"', { timeout: 120000 });
-  res.download(tmp, 'backup-openclaw-ssd-' + ts + '.tar.gz', () => { try { fs.unlinkSync(tmp); } catch {} });
+  run('tar -czf "' + tmp + '" -C "' + process.env.HOME + '" .openclaw -C "' + INSTALL_ROOT + '" workspace', { timeout: 120000 });
+  res.download(tmp, 'backup-openclaw-' + ts + '.tar.gz', () => { try { fs.unlinkSync(tmp); } catch {} });
 });
 app.get('/api/backup/all', auth, (req, res) => {
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const tmp = '/tmp/oc-backup-all-' + ts + '.tar.gz';
-  run('tar -czf "' + tmp + '" -C "' + process.env.HOME + '" .openclaw -C "' + SSD_ROOT + '" "USER FILES" dashboard', { timeout: 300000 });
+  run('tar -czf "' + tmp + '" -C "' + process.env.HOME + '" .openclaw -C "' + INSTALL_ROOT + '" workspace dashboard', { timeout: 300000 });
   res.download(tmp, 'backup-openclaw-all-' + ts + '.tar.gz', () => { try { fs.unlinkSync(tmp); } catch {} });
 });
 
@@ -564,10 +576,11 @@ app.get('/api/backup/all', auth, (req, res) => {
 app.get('/{*path}', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log('\n⚡ OpenClaw Command Center v1.5 (Mac SSD Edition)');
-  console.log('   Port: ' + PORT);
-  console.log('   SSD: ' + SSD_ROOT);
-  console.log('   Config: ' + CONFIG_DIR);
+  console.log('');
+  console.log('⚡ OpenClaw Command Center v1.6');
+  console.log('   Install: ' + INSTALL_ROOT + (IS_SSD ? ' (SSD)' : ' (Local)'));
+  console.log('   Config:  ' + CONFIG_DIR);
+  console.log('   Port:    ' + PORT);
   console.log('   Dashboard: http://localhost:' + PORT + '/?token=' + AUTH_TOKEN);
   console.log('');
 });
