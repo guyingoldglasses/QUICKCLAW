@@ -115,7 +115,7 @@ if [[ -f "$FNM_DIR/fnm" ]]; then
 else
   ARCH=$(uname -m)
   if [[ "$ARCH" == "arm64" ]]; then
-    FNM_ASSET="fnm-arm64-macos.zip"
+    FNM_ASSET="fnm-macos.zip"
   else
     FNM_ASSET="fnm-macos.zip"
   fi
