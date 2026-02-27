@@ -1,79 +1,111 @@
 #!/bin/bash
-# ═══════════════════════════════════════════════════════════════════
-#  QuickClaw Stop — Shut down OpenClaw and safely eject SSD
-# ═══════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════
+#  QuickClaw V3 — Stop
+#  Cleanly stops gateway + dashboard + removes
+#  the ~/.openclaw symlink so unplugging the
+#  drive leaves zero traces on the Mac.
+# ═══════════════════════════════════════════
 
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'
-BOLD='\033[1m'; DIM='\033[2m'; NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-clear
-echo ""
-echo -e "${RED}${BOLD}  🛑 QuickClaw — Shutting Down${NC}"
-echo ""
-
-# ─── Stop gateway ───
-if pgrep -f "openclaw.gateway" > /dev/null 2>&1; then
-  echo -e "  ${DIM}Stopping gateway...${NC}"
-  pkill -f "openclaw-gateway" 2>/dev/null
-  pkill -f "openclaw.gateway" 2>/dev/null
-  sleep 2
-  # Force kill if still running
-  if pgrep -f "openclaw.gateway" > /dev/null 2>&1; then
-    pkill -9 -f "openclaw-gateway" 2>/dev/null
-    sleep 1
-  fi
-  echo -e "  ${GREEN}✓${NC} Gateway stopped"
+# ─── Resolve the real install location ───
+if [[ -f "$SCRIPT_DIR/.quickclaw-root" ]]; then
+  BASE_DIR="$(cat "$SCRIPT_DIR/.quickclaw-root")"
+  [[ ! -d "$BASE_DIR" ]] && BASE_DIR="$SCRIPT_DIR"
 else
-  echo -e "  ${DIM}Gateway not running${NC}"
+  BASE_DIR="$SCRIPT_DIR"
 fi
 
-# ─── Stop dashboard ───
-if pgrep -f "node.*server.js" > /dev/null 2>&1; then
-  echo -e "  ${DIM}Stopping dashboard...${NC}"
-  pkill -f "node.*server.js" 2>/dev/null
-  sleep 1
-  echo -e "  ${GREEN}✓${NC} Dashboard stopped"
-else
-  echo -e "  ${DIM}Dashboard not running${NC}"
-fi
+PID_DIR="$BASE_DIR/.pids"
 
-# ─── Stop antfarm daemon if running ───
-if pgrep -f "antfarm.*daemon" > /dev/null 2>&1; then
-  echo -e "  ${DIM}Stopping Antfarm...${NC}"
-  pkill -f "antfarm.*daemon" 2>/dev/null
-  sleep 1
-  echo -e "  ${GREEN}✓${NC} Antfarm stopped"
-fi
+GREEN='\033[0;32m'; RED='\033[0;31m'; CYAN='\033[0;36m'; NC='\033[0m'; BOLD='\033[1m'
 
 echo ""
-echo -e "  ${GREEN}✅ All services stopped.${NC}"
+echo -e "${BOLD}⚡ QuickClaw V3 — Stopping...${NC}"
+echo ""
 
-# ─── Find and eject SSD ───
-FOUND_SSD=""
-for vol in /Volumes/*/; do
-  vname=$(basename "$vol")
-  if [[ "$vname" != "Macintosh HD" && "$vname" != "Macintosh HD - Data" && "$vname" != "Preboot" && "$vname" != "Recovery" && "$vname" != "VM" && "$vname" != "Update" ]]; then
-    if [[ -d "${vol}OpenClaw" ]]; then
-      FOUND_SSD="$vname"
-      break
+stopped=0
+
+# ─── Unload the LaunchAgent (stops the gateway service properly) ───
+PLIST="$HOME/Library/LaunchAgents/ai.openclaw.gateway.plist"
+if launchctl list | grep -q "ai.openclaw.gateway" 2>/dev/null; then
+  echo -e "${CYAN}[info]${NC}  Unloading gateway LaunchAgent..."
+  launchctl bootout "gui/$(id -u)/ai.openclaw.gateway" 2>/dev/null || true
+  stopped=$((stopped + 1))
+  sleep 1
+fi
+# Remove the plist so it doesn't auto-start on login
+if [[ -f "$PLIST" ]]; then
+  rm -f "$PLIST"
+  echo -e "${CYAN}[info]${NC}  Removed LaunchAgent plist"
+fi
+
+# ─── Stop from PID files ───
+for name in dashboard gateway; do
+  pidfile="$PID_DIR/$name.pid"
+  if [[ -f "$pidfile" ]]; then
+    pid=$(cat "$pidfile" 2>/dev/null || true)
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      echo -e "${CYAN}[info]${NC}  Stopping $name (PID $pid)..."
+      kill "$pid" 2>/dev/null || true
+      sleep 1
+      if kill -0 "$pid" 2>/dev/null; then
+        kill -9 "$pid" 2>/dev/null || true
+        sleep 0.5
+      fi
+      stopped=$((stopped + 1))
     fi
+    rm -f "$pidfile"
   fi
 done
 
-if [[ -n "$FOUND_SSD" ]]; then
-  echo ""
-  echo -e "  ${BOLD}Eject SSD '${FOUND_SSD}'?${NC}"
-  read -p "  (y/n): " EJECT
-  if [[ "$EJECT" == "y" || "$EJECT" == "Y" ]]; then
-    echo ""
-    echo -e "  ${DIM}Ejecting in 3 seconds...${NC}"
-    sleep 3
-    diskutil eject "/Volumes/${FOUND_SSD}"
-    echo ""
-    echo -e "  ${GREEN}🔌 SSD ejected. Safe to unplug!${NC}"
-  fi
+# ─── Kill any orphan dashboard processes on common ports ───
+for port in 3000 3001 3002 3003 3004 3005; do
+  pids=$(lsof -ti tcp:$port 2>/dev/null || true)
+  for pid in $pids; do
+    cmd=$(ps -p "$pid" -o command= 2>/dev/null || true)
+    if [[ "$cmd" == *"server.js"* || "$cmd" == *"dashboard-files"* ]]; then
+      echo -e "${CYAN}[info]${NC}  Killing orphan dashboard on :$port (PID $pid)"
+      kill "$pid" 2>/dev/null || true
+      sleep 0.5
+      kill -9 "$pid" 2>/dev/null || true
+      stopped=$((stopped + 1))
+    fi
+  done
+done
+
+# ─── Kill any orphan gateway processes ───
+for port in 5000 18789; do
+  pids=$(lsof -ti tcp:$port 2>/dev/null || true)
+  for pid in $pids; do
+    cmd=$(ps -p "$pid" -o command= 2>/dev/null || true)
+    if [[ "$cmd" == *"openclaw"* || "$cmd" == *"gateway"* ]]; then
+      echo -e "${CYAN}[info]${NC}  Killing orphan gateway on :$port (PID $pid)"
+      kill "$pid" 2>/dev/null || true
+      sleep 0.5
+      kill -9 "$pid" 2>/dev/null || true
+      stopped=$((stopped + 1))
+    fi
+  done
+done
+
+# ─── Remove ~/.openclaw symlink ───
+# This is the key to portability: when the drive is unplugged,
+# there's no trace of OpenClaw on the Mac.
+if [[ -L "$HOME/.openclaw" ]]; then
+  target=$(readlink "$HOME/.openclaw")
+  rm "$HOME/.openclaw"
+  echo -e "${CYAN}[info]${NC}  Removed ~/.openclaw symlink (was → $target)"
+elif [[ -d "$HOME/.openclaw" ]]; then
+  echo -e "${CYAN}[info]${NC}  Note: ~/.openclaw is a real directory, not a symlink."
+  echo -e "${CYAN}[info]${NC}  Run QuickClaw_Install to migrate it to your external drive."
 fi
 
-echo ""
-read -n 1 -s -r -p "  Press any key to close..."
+if [[ $stopped -eq 0 ]]; then
+  echo -e "${GREEN}[  ok]${NC}  Nothing was running."
+else
+  echo ""
+  echo -e "${GREEN}[  ok]${NC}  Stopped $stopped process(es)."
+fi
+echo -e "${GREEN}[  ok]${NC}  QuickClaw fully stopped. Safe to unplug the drive."
 echo ""

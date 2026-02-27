@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QuickClaw V3 — Start Here</title>
+  <style>
+    :root{--bg:#0e1116;--card:#161b22;--muted:#9aa4b2;--text:#e6edf3;--ok:#3fb950;--warn:#d29922;--line:#2d333b;--blue:#58a6ff}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:900px;margin:0 auto;padding:28px 18px 48px}
+    .hero{background:linear-gradient(180deg,#111826,#0e1116);border:1px solid var(--line);border-radius:16px;padding:20px}
+    h1{margin:0 0 8px;font-size:28px} h2{margin:0 0 10px;font-size:19px}
+    p{margin:0 0 10px;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+    code{background:#0f141c;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:#c9d1d9}
+    .step{display:grid;grid-template-columns:34px 1fr;gap:12px;margin:10px 0}
+    .num{width:34px;height:34px;border-radius:999px;border:1px solid var(--line);display:grid;place-items:center;background:#101723;color:var(--blue);font-weight:700}
+    .pill{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);margin-right:8px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)}
+    ul{margin:8px 0 0 18px;padding:0} li{margin:4px 0}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>QuickClaw V3 — Start Here</h1>
+      <p>Fast, external-drive-first OpenClaw setup for Mac. This page is for non-technical users and gives the exact click path.</p>
+      <div>
+        <span class="pill">Minimal clicks</span>
+        <span class="pill">External SSD ready</span>
+        <span class="pill">Local dashboard</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>First-time install (recommended path)</h2>
+      <div class="step"><div class="num">1</div><div>Open this QuickClaw folder in Finder.</div></div>
+      <div class="step"><div class="num">2</div><div>Double-click <code>QuickClaw_Setup.command</code>.</div></div>
+      <div class="step"><div class="num">3</div><div>When prompted for location, choose your external drive (for example: <code>QUICKCLAWv2</code>).</div></div>
+      <div class="step"><div class="num">4</div><div>After install finishes, use scripts from the external drive path:<br><code>/Volumes/&lt;DRIVE_NAME&gt;/QuickClaw</code></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily use</h2>
+      <ul>
+        <li><code>QuickClaw_Launch.command</code> — starts gateway + dashboard</li>
+        <li><code>QuickClaw_Stop.command</code> — stops QuickClaw services</li>
+        <li><code>QuickClaw_Verify.command</code> — health checks</li>
+        <li><code>QuickClaw Doctor.command</code> — diagnostics + logs</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>If macOS blocks script opening</h2>
+      <p class="warn">Gatekeeper can block downloaded .command files. Use one of these:</p>
+      <ul>
+        <li>Right-click the file → <b>Open</b> → confirm</li>
+        <li>or System Settings → Privacy & Security → <b>Open Anyway</b></li>
+      </ul>
+      <p style="margin-top:10px">After first successful setup, this usually stops being an issue for this folder.</p>
+    </div>
+
+    <div class="card">
+      <h2>What success looks like</h2>
+      <ul>
+        <li class="ok">Launch output shows dashboard URL and gateway status</li>
+        <li class="ok">Dashboard opens and shows <b>Gateway: RUNNING</b></li>
+        <li class="ok">Root path in dashboard points to your external drive QuickClaw folder</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Fast connection setup (OpenAI + Telegram)</h2>
+      <ul>
+        <li>Go to <b>Integrations</b> tab in dashboard.</li>
+        <li>For OpenAI: paste API key, then use <b>Quick Connect OpenAI</b>.</li>
+        <li>For Telegram: get bot token from <b>@BotFather</b>, paste token, then use Telegram quick connect/save.</li>
+        <li>After connecting either one, use <b>Apply Settings To Config</b>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Quick troubleshooting commands</h2>
+      <p class="mono">bash /Volumes/QUICKCLAWv2/QuickClaw/QuickClaw_Stop.command</p>
+      <p class="mono">bash /Volumes/QUICKCLAWv2/QuickClaw/QuickClaw_Launch.command</p>
+      <p class="mono">tail -n 200 /Volumes/QUICKCLAWv2/QuickClaw/logs/dashboard.log</p>
+      <p class="mono">tail -n 200 /Users/&lt;you&gt;/.openclaw/logs/gateway.log</p>
+    </div>
+  </div>
+</body>
+</html>

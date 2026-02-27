@@ -8,19 +8,24 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0a0c10;--surface:#12151c;--surface2:#181c26;--border:#1e2330;--border2:#2a3040;--text:#e2e8f0;--dim:#64748b;--muted:#475569;--accent:#22d3ee;--accent-d:rgba(34,211,238,.12);--green:#34d399;--green-d:rgba(52,211,153,.12);--red:#f87171;--red-d:rgba(248,113,113,.12);--amber:#fbbf24;--amber-d:rgba(251,191,36,.12);--purple:#a78bfa;--purple-d:rgba(167,139,250,.12);--blue:#60a5fa;--blue-d:rgba(96,165,250,.12)}
-    html,body{height:100%;overflow:hidden}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+    :root{--bg:#09090b;--surface:#0f0f12;--surface2:#18181b;--border:#27272a;--border2:#3f3f46;--text:#e4e4e7;--dim:#71717a;--muted:#52525b;--accent:#e4e4e7;--accent-d:rgba(228,228,231,.08);--green:#4ade80;--green-d:rgba(74,222,128,.1);--red:#f87171;--red-d:rgba(248,113,113,.1);--amber:#fbbf24;--amber-d:rgba(251,191,36,.1);--purple:#c4b5fd;--purple-d:rgba(196,181,253,.1);--blue:#93c5fd;--blue-d:rgba(147,197,253,.1)}
+    html,body{height:100%;overflow:hidden}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);font-size:14px;overflow-x:hidden}
     ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
     button{cursor:pointer;font-family:inherit}button:hover{filter:brightness(1.12)}
-    input,textarea,select{font-family:'JetBrains Mono',monospace}input:focus,textarea:focus,select:focus{border-color:var(--accent)!important;outline:none}
+    input,textarea,select{font-family:'JetBrains Mono',monospace;min-width:0;max-width:100%}input:focus,textarea:focus,select:focus{border-color:var(--accent)!important;outline:none}
     .app{display:flex;height:100vh}
     .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
     .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-    .content{padding:24px 28px;overflow-y:auto;flex:1}
-    .mobile-header{display:none;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+    .content{padding:24px 28px;overflow-y:auto;overflow-x:hidden;flex:1}
+    .mobile-header{display:none;align-items:center;padding:0;border-bottom:1px solid var(--border);background:var(--surface);gap:0}
+    .top-nav{display:flex;align-items:center;overflow-x:auto;flex:1;gap:2px;padding:8px 8px 8px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}.top-nav::-webkit-scrollbar{display:none}
+    .top-nav-btn{flex:0 0 auto;padding:6px 12px;border:none;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;white-space:nowrap;cursor:pointer;background:transparent;color:var(--dim);display:flex;align-items:center;gap:5px;transition:all .15s}
+    .top-nav-btn.active{background:var(--accent-d);color:var(--accent);font-weight:600}.top-nav-btn:hover{background:var(--surface2)}
+    .news-sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 28px 8px;margin:0 -28px 8px}
     .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
-    @media(max-width:768px){.sidebar{display:none;position:fixed;z-index:100;height:100vh}.sidebar.open{display:flex}.mobile-header{display:flex}.mobile-overlay.open{display:block}.content{padding:16px}}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all .15s}
+    .mobile-header{display:flex!important}@media(max-width:768px){.sidebar{display:none;position:fixed;z-index:100;height:100vh}.sidebar.open{display:flex}.mobile-overlay.open{display:block}.content{padding:16px}}
+    @media(max-width:600px){.form-2col{grid-template-columns:1fr!important}}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:all .15s;overflow:hidden;max-width:100%;word-break:break-word}
     .card-click{cursor:pointer}.card-click:hover{border-color:var(--border2);background:var(--surface2)}
     .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
     .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:6px;transition:all .15s;border:none;white-space:nowrap}
@@ -30,7 +35,7 @@
     .btn-danger{background:transparent;color:var(--red);border:1px solid rgba(248,113,113,.2)}
     .btn-ghost{background:transparent;color:var(--dim);border:none;padding:4px 6px}
     .btn-green{background:var(--green);color:var(--bg);font-weight:600}
-    .input{width:100%;padding:8px 12px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px}
+    .input{width:100%;padding:8px 12px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
     .section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
     .section-title h3{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
     .toggle{width:44px;height:24px;border-radius:24px;border:none;position:relative;transition:all .2s;cursor:pointer;flex-shrink:0}
@@ -40,14 +45,19 @@
     .stat-val{font-size:22px;font-weight:700;font-family:'JetBrains Mono',monospace;text-align:center}
     .stat-lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;text-align:center;margin-top:2px}
     .mono{font-family:'JetBrains Mono',monospace}
-    .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px;z-index:200;font-size:13px;display:flex;align-items:center;gap:8px;animation:slideUp .3s;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 20px;z-index:10000;font-size:13px;display:flex;align-items:center;gap:8px;animation:slideUp .3s;box-shadow:0 8px 32px rgba(0,0,0,.4)}
     @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
     .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
     .log-area{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:var(--green);max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
     .nav-btn{width:100%;padding:9px 12px;display:flex;align-items:center;gap:10px;background:transparent;border:none;border-radius:8px;color:var(--dim);font-size:13px;transition:all .15s;margin-bottom:2px}
     .nav-btn.active{background:var(--accent-d);color:var(--accent);font-weight:600}.nav-btn:hover{background:var(--surface2)}
-    .env-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px}.env-row:last-child{border-bottom:none}
+    .env-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px;overflow:hidden}.env-row:last-child{border-bottom:none}
+    .sticky-bar{position:sticky;bottom:0;left:0;right:0;padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);z-index:10;display:flex;justify-content:center;gap:8px}
+    .fixed-restart{position:fixed;bottom:20px;right:28px;z-index:50;animation:slideUp .3s}
+    .search-wrap{position:relative;margin-bottom:12px}.search-wrap input{padding-right:32px}.search-wrap .clear-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1}.search-wrap .clear-x:hover{color:var(--text)}
+    .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;display:flex;align-items:center;justify-content:center;padding:20px}
     .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto}
     .bar{height:6px;border-radius:3px;transition:width .3s}.bar-wrap{background:var(--border);border-radius:3px;height:6px;flex:1}
@@ -61,576 +71,52 @@
     .feed-item{display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;align-items:flex-start}.feed-item:last-child{border-bottom:none}
     .feed-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
     .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 5px;border-radius:3px;background:var(--border);color:var(--dim);font-size:10px;font-family:'JetBrains Mono',monospace}
-    .score-ring{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace}
+    .file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;font-size:13px}.file-item:hover{background:var(--surface2)}.file-item:last-child{border-bottom:none}
+.check-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px}.check-item:hover{background:var(--surface2)}.check-item input{width:16px;height:16px;accent-color:var(--accent)}
+.wizard-stepper{display:flex;gap:4px;margin-bottom:20px}.wizard-dot{flex:1;height:4px;border-radius:2px;background:var(--border)}.wizard-dot.active{background:var(--accent)}.wizard-dot.done{background:var(--green)}
+.score-ring{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace}
   </style>
+<script>window.addEventListener("error",function(e){var d=document.createElement('div');d.style.cssText='position:fixed;z-index:99999;left:10px;right:10px;bottom:10px;background:#2b0000;color:#ffb4b4;border:1px solid #ff5555;padding:10px;font:12px monospace;white-space:pre-wrap;max-height:45vh;overflow:auto';d.textContent='Dashboard JS error: '+(e.message||'unknown')+'\n'+(e.filename||'')+':'+(e.lineno||'')+':'+(e.colno||'');document.body.appendChild(d);});</script>
 </head>
 <body>
 <div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<script type="text/babel">
-const{useState,useEffect,useCallback,useRef}=React;
-const TOKEN=new URLSearchParams(window.location.search).get('token')||'';
-async function api(ep,opts={}){const sep=ep.includes('?')?'&':'?';const cfg={headers:{'Content-Type':'application/json'},...opts};if(opts.body&&typeof opts.body==='object')cfg.body=JSON.stringify(opts.body);const res=await fetch('/api'+ep+sep+'token='+TOKEN,cfg);if(res.status===401)throw new Error('Unauthorized');return res.json();}
-function dlUrl(ep){return '/api'+ep+(ep.includes('?')?'&':'?')+'token='+TOKEN;}
-function fmtTokens(n){if(!n)return'0';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n);}
-function fmtCost(n){if(!n)return'$0.00';return'$'+n.toFixed(4);}
-function cn(){var r='';for(var i=0;i<arguments.length;i++)if(arguments[i])r+=(r?' ':'')+arguments[i];return r;}
-function Toast({message,type}){if(!message)return null;var c=type==='error'?'var(--red)':type==='success'?'var(--green)':'var(--accent)';return React.createElement('div',{className:'toast'},React.createElement('span',{style:{color:c}},'●'),message);}
-
-function AlertBanner(){
-  var[alerts,setAlerts]=useState([]);var[dismissed,setDismissed]=useState({});
-  useEffect(function(){api('/alerts').then(function(d){setAlerts(d.alerts||[]);}).catch(function(){});var i=setInterval(function(){api('/alerts').then(function(d){setAlerts(d.alerts||[]);}).catch(function(){});},60000);return function(){clearInterval(i);};},[]);
-  var visible=alerts.filter(function(_,i){return !dismissed[i];});
-  if(!visible.length)return null;
-  return React.createElement('div',null,visible.map(function(a,i){
-    return React.createElement('div',{key:i,className:'alert-bar '+a.type},
-      React.createElement('span',null,a.icon),
-      React.createElement('span',{style:{flex:1}},a.message),
-      React.createElement('button',{className:'btn-ghost',onClick:function(){var d=Object.assign({},dismissed);d[i]=true;setDismissed(d);},style:{color:'inherit',fontSize:16,border:'none',background:'none',cursor:'pointer'}},'✕')
-    );
-  }));
-}
-
-function CopySkillModal({skill,profileId,profiles,onClose,toast}){
-  var others=profiles.filter(function(p){return p.id!==profileId;});
-  var[sel,setSel]=useState({});var[busy,setBusy]=useState(false);
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();}},
-      React.createElement('h3',{style:{marginBottom:16}},'Copy "'+skill+'" to:'),
-      others.map(function(p){return React.createElement('label',{key:p.id,style:{display:'flex',alignItems:'center',gap:10,padding:'8px 0',cursor:'pointer',fontSize:13}},
-        React.createElement('input',{type:'checkbox',checked:!!sel[p.id],onChange:function(e){var s=Object.assign({},sel);s[p.id]=e.target.checked;setSel(s);}}),
-        React.createElement('b',null,p.id),
-        React.createElement('span',{className:'mono',style:{color:'var(--dim)',fontSize:11}},':'+p.port)
-      );}),
-      React.createElement('div',{style:{display:'flex',gap:8,marginTop:16,justifyContent:'flex-end'}},
-        React.createElement('button',{className:'btn btn-sm btn-default',onClick:onClose},'Cancel'),
-        React.createElement('button',{className:'btn btn-sm btn-primary',disabled:busy,onClick:async function(){setBusy(true);var t=Object.entries(sel).filter(function(x){return x[1];}).map(function(x){return x[0];});if(t.length){await api('/profiles/'+profileId+'/skills/'+skill+'/copy',{method:'POST',body:{targets:t}});toast('Copied!','success');onClose();}setBusy(false);}},busy?React.createElement('span',{className:'spinner'}):null,' Copy')
-      )
-    )
-  );
-}
-
-function CreateProfileModal({profiles,onClose,toast,onCreated}){
-  var[id,setId]=useState('');var[name,setName]=useState('');var[port,setPort]=useState('');var[copyFrom,setCopyFrom]=useState('');var[busy,setBusy]=useState(false);
-  useEffect(function(){var p=18802;while(profiles.some(function(x){return x.port===p;}))p++;setPort(String(p));},[]);
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();}},
-      React.createElement('h3',{style:{marginBottom:16,fontSize:18}},'Create New Profile'),
-      React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Profile ID'),React.createElement('input',{className:'input',value:id,onChange:function(e){setId(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,''));},placeholder:'e.g. research-bot'})),
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Display Name'),React.createElement('input',{className:'input',value:name,onChange:function(e){setName(e.target.value);},placeholder:'e.g. Research Agent'})),
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Port'),React.createElement('input',{className:'input',type:'number',value:port,onChange:function(e){setPort(e.target.value);}})),
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Copy from'),
-          React.createElement('select',{value:copyFrom,onChange:function(e){setCopyFrom(e.target.value);},className:'input',style:{fontFamily:'inherit'}},
-            React.createElement('option',{value:''},'Start fresh'),
-            profiles.map(function(p){return React.createElement('option',{key:p.id,value:p.id},p.id);})
-          )),
-        React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:8}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:onClose},'Cancel'),
-          React.createElement('button',{className:'btn btn-sm btn-primary',disabled:busy,onClick:async function(){if(!id||!port)return;setBusy(true);try{await api('/profiles',{method:'POST',body:{id:id,name:name||id,port:parseInt(port),copyFrom:copyFrom||undefined}});toast('Created!','success');onCreated();onClose();}catch(e){toast(e.message,'error');}setBusy(false);}},busy?React.createElement('span',{className:'spinner'}):null,' Create')
-        )
-      )
-    )
-  );
-}
-
-function ResetProfileModal({profileId,onClose,toast}){
-  var[soul,setSoul]=useState(true);var[mem,setMem]=useState(true);var[sess,setSess]=useState(false);
-  var[busy,setBusy]=useState(false);var[result,setResult]=useState(null);
-  function mkOpt(label,desc,val,set){
-    return React.createElement('label',{key:label,style:{display:'flex',alignItems:'flex-start',gap:10,cursor:'pointer',padding:'10px 14px',background:'var(--bg)',borderRadius:8,border:'1px solid var(--border)'}},
-      React.createElement('input',{type:'checkbox',checked:val,onChange:function(e){set(e.target.checked);},style:{marginTop:3}}),
-      React.createElement('div',null,React.createElement('div',{style:{fontWeight:600,fontSize:13}},label),React.createElement('div',{style:{color:'var(--dim)',fontSize:11,marginTop:2}},desc)));
-  }
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();}},
-      React.createElement('h3',{style:{marginBottom:4,fontSize:18}},'🔄 Reset Profile: '+profileId),
-      React.createElement('p',{style:{color:'var(--dim)',fontSize:12,marginBottom:16}},'Backup is created automatically. API keys, skills, and service config are preserved.'),
-      !result ? React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-          mkOpt('Reset Soul','Revert personality to default template',soul,setSoul),
-          mkOpt('Clear Memory','Remove all memory/*.md files and MEMORY.md',mem,setMem),
-          mkOpt('Clear Sessions','Wipe session history (fresh conversation start)',sess,setSess)),
-        React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:16}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:onClose},'Cancel'),
-          React.createElement('button',{className:'btn btn-sm btn-danger',style:{background:'rgba(248,113,113,.1)'},disabled:busy,onClick:async function(){if(!soul&&!mem&&!sess)return;setBusy(true);try{var r=await api('/profiles/'+profileId+'/reset',{method:'POST',body:{resetSoul:soul,resetMemory:mem,resetSessions:sess}});setResult(r);toast('Reset complete','success');}catch(e){toast(e.message,'error');}setBusy(false);}},busy?React.createElement('span',{className:'spinner'}):null,' Reset'))
-      ) : React.createElement('div',null,
-        React.createElement('div',{style:{padding:16,background:'var(--green-d)',borderRadius:8,marginBottom:12}},
-          React.createElement('div',{style:{fontWeight:600,color:'var(--green)',marginBottom:8}},'✓ Reset Complete'),
-          (result.actions||[]).map(function(a,i){return React.createElement('div',{key:i,className:'mono',style:{fontSize:12,color:'var(--text)',padding:'2px 0'}},'• '+a);}),
-          React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:8}},'Backup: '+result.backupDir)),
-        React.createElement('div',{style:{textAlign:'right'}},React.createElement('button',{className:'btn btn-sm btn-primary',onClick:onClose},'Done')))
-    )
-  );
-}
-
-function MemoryFileModal({profileId,file,onClose,toast}){
-  var[content,setContent]=useState(null);var[editing,setEditing]=useState(false);var[editContent,setEditContent]=useState('');
-  useEffect(function(){api('/profiles/'+profileId+'/memory/'+file.name).then(function(d){setContent(d.content);setEditContent(d.content);}).catch(function(){setContent('Failed to load');});},[]);
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();},style:{maxWidth:700}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
-        React.createElement('h3',null,file.name),
-        React.createElement('div',{style:{display:'flex',gap:6}},
-          !editing&&content!==null?React.createElement('button',{className:'btn btn-xs btn-default',onClick:function(){setEditing(true);}},'✎ Edit'):null,
-          editing?React.createElement('button',{className:'btn btn-xs btn-primary',onClick:async function(){await api('/profiles/'+profileId+'/memory/'+file.name,{method:'PUT',body:{content:editContent}});setContent(editContent);setEditing(false);toast('Saved','success');}},'💾 Save'):null,
-          !editing&&file.location!=='workspace'?React.createElement('button',{className:'btn btn-xs btn-danger',onClick:async function(){if(!confirm('Archive '+file.name+'?'))return;await api('/profiles/'+profileId+'/memory/'+file.name,{method:'DELETE'});toast('Archived','success');onClose();}},'🗑'):null,
-          React.createElement('button',{className:'btn btn-ghost',onClick:onClose,style:{fontSize:18}},'✕')
-        )
-      ),
-      content===null?React.createElement('div',{style:{textAlign:'center',padding:20}},React.createElement('span',{className:'spinner'})):
-      editing?React.createElement('textarea',{value:editContent,onChange:function(e){setEditContent(e.target.value);},className:'mono',style:{width:'100%',minHeight:400,padding:14,background:'var(--bg)',color:'var(--text)',border:'1px solid var(--border)',borderRadius:8,fontSize:12,lineHeight:1.7,resize:'vertical'}}):
-      React.createElement('pre',{style:{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:8,padding:14,fontSize:12,lineHeight:1.7,maxHeight:'60vh',overflowY:'auto',whiteSpace:'pre-wrap',wordBreak:'break-word',fontFamily:"'JetBrains Mono',monospace",color:'var(--text)'}},content)
-    )
-  );
-}
-
-function CronAddModal({profileId,onClose,toast,onAdded}){
-  var[name,setName]=useState('');var[schedType,setSchedType]=useState('cron');var[schedule,setSchedule]=useState('');
-  var[tz,setTz]=useState('Pacific/Honolulu');var[session,setSession]=useState('isolated');var[message,setMessage]=useState('');
-  var[busy,setBusy]=useState(false);
-  var presets=[{l:'Every hour',s:'0 * * * *'},{l:'Morning 7am',s:'0 7 * * *'},{l:'Evening 6pm',s:'0 18 * * *'},{l:'Weekdays 9am',s:'0 9 * * 1-5'},{l:'Every 30min',s:'*/30 * * * *'},{l:'Monday 8am',s:'0 8 * * 1'}];
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();},style:{maxWidth:600}},
-      React.createElement('h3',{style:{marginBottom:16}},'⏰ Add Cron Job'),
-      React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Name'),React.createElement('input',{className:'input',value:name,onChange:function(e){setName(e.target.value);},placeholder:'e.g. Morning Briefing'})),
-        React.createElement('div',null,
-          React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Schedule Type'),
-          React.createElement('div',{style:{display:'flex',gap:6}},
-            ['cron','at','every'].map(function(v){var labels={cron:'Cron',at:'One-time',every:'Interval'};return React.createElement('button',{key:v,className:'btn btn-sm '+(schedType===v?'btn-primary':'btn-default'),onClick:function(){setSchedType(v);}},labels[v]);}))),
-        schedType==='cron'?React.createElement('div',null,
-          React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Cron Expression'),
-          React.createElement('input',{className:'input',value:schedule,onChange:function(e){setSchedule(e.target.value);},placeholder:'0 7 * * * (min hour day month weekday)'}),
-          React.createElement('div',{style:{display:'flex',gap:4,marginTop:6,flexWrap:'wrap'}},presets.map(function(p){return React.createElement('button',{key:p.l,className:'btn btn-xs btn-default',onClick:function(){setSchedule(p.s);}},p.l);}))
-        ):schedType==='at'?React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'When'),React.createElement('input',{className:'input',value:schedule,onChange:function(e){setSchedule(e.target.value);},placeholder:'2026-02-17T10:00:00Z or 20m'})):
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Interval'),React.createElement('input',{className:'input',value:schedule,onChange:function(e){setSchedule(e.target.value);},placeholder:'30m, 1h, 6h'})),
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Timezone'),React.createElement('input',{className:'input',value:tz,onChange:function(e){setTz(e.target.value);}})),
-        React.createElement('div',null,
-          React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Session'),
-          React.createElement('div',{style:{display:'flex',gap:6}},
-            React.createElement('button',{className:'btn btn-sm '+(session==='isolated'?'btn-primary':'btn-default'),onClick:function(){setSession('isolated');}},'Isolated (background)'),
-            React.createElement('button',{className:'btn btn-sm '+(session==='main'?'btn-primary':'btn-default'),onClick:function(){setSession('main');}},'Main (alert)')),
-          React.createElement('div',{className:'mono',style:{fontSize:10,color:'var(--dim)',marginTop:4}},session==='isolated'?"Runs independently, won't clutter your chat":'Runs in main conversation as a system event')),
-        React.createElement('div',null,React.createElement('label',{className:'mono',style:{fontSize:11,color:'var(--dim)',display:'block',marginBottom:4}},'Task / Message'),
-          React.createElement('textarea',{className:'input mono',value:message,onChange:function(e){setMessage(e.target.value);},placeholder:'What should the agent do?',style:{minHeight:80,resize:'vertical',lineHeight:1.5}})),
-        React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:8}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:onClose},'Cancel'),
-          React.createElement('button',{className:'btn btn-sm btn-primary',disabled:busy,onClick:async function(){if(!name||!schedule||!message)return;setBusy(true);try{var r=await api('/profiles/'+profileId+'/cron/add',{method:'POST',body:{name:name,schedule:schedule,scheduleType:schedType,timezone:tz,session:session,message:message}});toast(r.ok?'Cron job added!':'Failed: '+(r.output||''),'success');onAdded();onClose();}catch(e){toast(e.message,'error');}setBusy(false);}},busy?React.createElement('span',{className:'spinner'}):null,' Create Job'))
-      )
-    )
-  );
-}
-
-function StatCard({value,label,color,size}){return React.createElement('div',{className:'card',style:{padding:12,textAlign:'center'}},React.createElement('div',{className:'stat-val',style:{color:color,fontSize:size||22}},value),React.createElement('div',{className:'stat-lbl'},label));}
-
-function PanelDashboard({profiles,system,loading,onRefresh,onNav,toast}){
-  var[showCreate,setShowCreate]=useState(false);var[usageData,setUsageData]=useState(null);
-  useEffect(function(){api('/usage/all').then(setUsageData).catch(function(){});},[profiles]);
-  var running=profiles.filter(function(p){return p.status==='running';}).length;
-  var totalCrons=profiles.reduce(function(s,p){return s+(p.cronCount||0);},0);
-  return React.createElement('div',null,
-    showCreate?React.createElement(CreateProfileModal,{profiles:profiles,onClose:function(){setShowCreate(false);},toast:toast,onCreated:onRefresh}):null,
-    React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:10,marginBottom:24}},
-      React.createElement(StatCard,{value:profiles.length,label:'Profiles',color:'var(--accent)'}),
-      React.createElement(StatCard,{value:running+'/'+profiles.length,label:'Running',color:'var(--green)'}),
-      React.createElement(StatCard,{value:usageData?fmtCost(usageData.totals.cost):'...',label:'Total Cost',color:'var(--amber)',size:16}),
-      React.createElement(StatCard,{value:usageData?fmtTokens(usageData.totals.inputTokens+usageData.totals.outputTokens):'...',label:'Tokens',color:'var(--purple)',size:14}),
-      React.createElement(StatCard,{value:totalCrons,label:'Cron Jobs',color:'var(--blue)'}),
-      React.createElement(StatCard,{value:system.memInfo||'...',label:'Memory',color:'var(--dim)',size:12}),
-      React.createElement(StatCard,{value:system.swapInfo||'...',label:'Swap',color:'var(--dim)',size:12})
-    ),
-    usageData&&usageData.totals.cost>0?React.createElement('div',{className:'card',style:{padding:16,marginBottom:20}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
-        React.createElement('div',{style:{fontSize:13,fontWeight:600}},'💰 Cost by Profile'),
-        React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--amber)'}},'~'+fmtCost(usageData.projected30d)+'/mo')),
-      Object.entries(usageData.profiles).map(function(entry){var id=entry[0],u=entry[1];var pct=usageData.totals.cost>0?(u.cost/usageData.totals.cost*100):0;
-        return React.createElement('div',{key:id,style:{marginBottom:10}},
-          React.createElement('div',{style:{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:4}},React.createElement('span',{style:{fontWeight:600}},id),React.createElement('span',{className:'mono',style:{color:'var(--amber)'}},fmtCost(u.cost))),
-          React.createElement('div',{className:'bar-wrap'},React.createElement('div',{className:'bar',style:{width:Math.max(pct,1)+'%',background:'var(--accent)'}})));})
-    ):null,
-    React.createElement('div',{className:'section-title'},
-      React.createElement('h3',null,'⚡ Profiles'),
-      React.createElement('div',{style:{display:'flex',gap:6}},
-        React.createElement('button',{className:'btn btn-sm btn-primary',onClick:function(){setShowCreate(true);}},'+ New'),
-        React.createElement('a',{href:dlUrl('/backup/all'),className:'btn btn-sm btn-default',style:{textDecoration:'none'}},'⬇ Backup'),
-        React.createElement('button',{className:'btn btn-sm btn-default',onClick:onRefresh,disabled:loading},loading?React.createElement('span',{className:'spinner'}):'↻'))),
-    React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:8}},
-      profiles.map(function(p){return React.createElement('div',{key:p.id,className:'card card-click',style:{padding:14,display:'flex',alignItems:'center',justifyContent:'space-between',borderLeft:'3px solid '+(p.status==='running'?'var(--green)':'var(--dim)')},onClick:function(){onNav('profile',p.id);}},
-        React.createElement('div',null,
-          React.createElement('div',{style:{fontSize:14,fontWeight:600}},p.name||p.id,
-            React.createElement('span',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginLeft:6}},':'+p.port),
-            p.telegramEnabled?React.createElement('span',{style:{marginLeft:6,fontSize:11}},'📱'):null,
-            p.cronCount>0?React.createElement('span',{style:{marginLeft:4,fontSize:11}},'⏰'+p.cronCount):null),
-          React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:2}},p.skillCount+' skills · '+(p.uptime||'down'),p.totalCost>0?React.createElement('span',{style:{color:'var(--amber)',marginLeft:6}},fmtCost(p.totalCost)):null)),
-        React.createElement('span',{className:'badge',style:{color:p.status==='running'?'var(--green)':'var(--red)',background:p.status==='running'?'var(--green-d)':'var(--red-d)'}},p.status==='running'?'● LIVE':'○ '+p.status.toUpperCase()));})),
-    React.createElement('div',{style:{marginTop:24}},
-      React.createElement('div',{className:'section-title'},React.createElement('h3',null,'🖥 Server')),
-      React.createElement('div',{className:'card',style:{padding:14}},
-        React.createElement('div',{className:'mono',style:{fontSize:12,lineHeight:1.8,color:'var(--dim)'}},
-          ['hostname','uptime','memInfo','swapInfo','loadAvg','nodeVersion','openclawVersion','diskUsage'].map(function(k){return React.createElement('div',{key:k},k+': ',React.createElement('span',{style:{color:'var(--text)'}},system[k]||'...'));}))))
-  );
-}
-
-function PanelProfile({profileId,profiles,toast,onNav}){
-  var p=profiles.find(function(x){return x.id===profileId;});
-  var[tab,setTab]=useState('overview');var[envVars,setEnvVars]=useState(null);var[envRevealed,setEnvRevealed]=useState(false);
-  var[config,setConfig]=useState(null);var[soul,setSoul]=useState(null);var[skills,setSkills]=useState(null);
-  var[logs,setLogs]=useState('');var[models,setModels]=useState(null);var[loading,setLoading]=useState(false);
-  var[addingEnv,setAddingEnv]=useState(false);var[newEnvKey,setNewEnvKey]=useState('');var[newEnvVal,setNewEnvVal]=useState('');
-  var[copyModal,setCopyModal]=useState(null);var[resetModal,setResetModal]=useState(false);
-  var[usage,setUsage]=useState(null);var[channels,setChannels]=useState(null);var[tgUsers,setTgUsers]=useState(null);
-  var[pairing,setPairing]=useState(null);var[sessions,setSessions]=useState(null);var[memModal,setMemModal]=useState(null);
-  var[cronData,setCronData]=useState(null);var[cronAddModal,setCronAddModal]=useState(false);
-  var[activity,setActivity]=useState(null);
-  if(!p)return React.createElement('div',{style:{color:'var(--dim)'}},'Not found');
-
-  var loadTab=useCallback(async function(t){setLoading(true);try{
-    if(t==='env')setEnvVars((await api('/profiles/'+profileId+'/env'+(envRevealed?'?reveal=true':''))).vars);
-    else if(t==='config')setConfig(JSON.stringify((await api('/profiles/'+profileId+'/config')).config,null,2));
-    else if(t==='soul')setSoul((await api('/profiles/'+profileId+'/soul')).content);
-    else if(t==='skills')setSkills((await api('/profiles/'+profileId+'/skills')).skills);
-    else if(t==='logs')setLogs((await api('/profiles/'+profileId+'/logs?lines=150')).logs);
-    else if(t==='models')setModels((await api('/profiles/'+profileId+'/models')).models);
-    else if(t==='usage')setUsage(await api('/profiles/'+profileId+'/usage'));
-    else if(t==='telegram'){setChannels((await api('/profiles/'+profileId+'/channels')).channels);setTgUsers(await api('/profiles/'+profileId+'/telegram/users'));setPairing(await api('/profiles/'+profileId+'/pairing'));}
-    else if(t==='history')setSessions(await api('/profiles/'+profileId+'/sessions'));
-    else if(t==='cron')setCronData(await api('/profiles/'+profileId+'/cron'));
-    else if(t==='activity')setActivity(await api('/profiles/'+profileId+'/activity'));
-  }catch(e){toast('Load failed','error');}setLoading(false);},[profileId,envRevealed]);
-  useEffect(function(){if(tab!=='overview')loadTab(tab);},[tab]);
-
-  var doAction=async function(a){setLoading(true);try{await api('/profiles/'+profileId+'/'+a,{method:'POST'});toast(a+' → '+profileId,'success');onNav('refresh');}catch(e){toast(e.message,'error');}setLoading(false);};
-
-  var tabs=[{id:'overview',l:'Overview'},{id:'activity',l:'📡 Live'},{id:'cron',l:'⏰ Cron'},{id:'usage',l:'💰 Usage'},{id:'telegram',l:'📱 Telegram'},{id:'history',l:'🧠 Memory'},{id:'env',l:'🔑 Keys'},{id:'models',l:'🧠 Models'},{id:'config',l:'⚙ Config'},{id:'soul',l:'👻 Soul'},{id:'skills',l:'🛠 Skills'},{id:'logs',l:'📋 Logs'}];
-
-  function renderTabContent(){
-    if(tab==='overview'){
-      return React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:10}},
-        [{l:'Port',v:p.port,c:'var(--accent)'},{l:'Skills',v:p.skillCount,c:'var(--purple)'},{l:'Cost',v:fmtCost(p.totalCost),c:'var(--amber)',s:16},{l:'Tokens',v:fmtTokens(p.totalInput+p.totalOutput),c:'var(--blue)',s:14},{l:'Crons',v:p.cronCount||0,c:'var(--green)'},{l:'Uptime',v:p.uptime||'down',c:'var(--dim)',s:12}].map(function(s,i){return React.createElement(StatCard,{key:i,value:s.v,label:s.l,color:s.c,size:s.s});}));
-    }
-    if(tab==='activity'){
-      return React.createElement('div',null,
-        React.createElement('div',{className:'section-title'},React.createElement('h3',null,'📡 Activity Feed'),React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){loadTab('activity');}},'↻')),
-        activity&&activity.events&&activity.events.length>0?React.createElement('div',{className:'card',style:{padding:0,overflow:'hidden',maxHeight:500,overflowY:'auto'}},
-          activity.events.map(function(ev,i){var bgMap={error:'var(--red-d)',message:'var(--accent-d)',tool:'var(--purple-d)',cron:'var(--amber-d)',status:'var(--green-d)',system:'var(--border)'};
-            return React.createElement('div',{key:i,className:'feed-item'},
-              React.createElement('div',{className:'feed-icon',style:{background:bgMap[ev.type]||'var(--border)'}},ev.icon),
-              React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)'}},ev.time),React.createElement('div',{style:{fontSize:12,marginTop:2,wordBreak:'break-word'}},ev.message)));})):
-        React.createElement('div',{className:'card',style:{padding:30,textAlign:'center',color:'var(--dim)'}},'No recent activity.'),
-        activity&&activity.channelLogs?React.createElement('div',{style:{marginTop:16}},React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:8}},'📱 Channel Logs'),React.createElement('div',{className:'log-area',style:{maxHeight:200}},activity.channelLogs||'No channel activity')):null);
-    }
-    if(tab==='cron'){
-      return React.createElement('div',null,
-        React.createElement('div',{className:'section-title'},React.createElement('h3',null,'⏰ Cron Jobs'),React.createElement('div',{style:{display:'flex',gap:6}},
-          React.createElement('button',{className:'btn btn-sm btn-primary',onClick:function(){setCronAddModal(true);}},'+ Add Job'),
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){loadTab('cron');}},'↻'))),
-        cronData&&cronData.output?React.createElement('div',{className:'card',style:{padding:0,overflow:'hidden',marginBottom:16}},
-          React.createElement('pre',{className:'mono',style:{padding:14,fontSize:11,lineHeight:1.7,color:'var(--text)',whiteSpace:'pre-wrap',wordBreak:'break-word',margin:0}},cronData.output)):null,
-        (!cronData||!cronData.output||cronData.output.includes('No cron'))?React.createElement('div',{className:'card',style:{padding:30,textAlign:'center'}},
-          React.createElement('div',{style:{fontSize:32,marginBottom:8}},'⏰'),
-          React.createElement('div',{style:{color:'var(--dim)',marginBottom:16}},'No cron jobs yet. Schedule automated tasks for this profile.'),
-          React.createElement('div',{style:{fontSize:12,color:'var(--muted)',maxWidth:400,margin:'0 auto',lineHeight:1.6}},'Examples: Morning briefing, inbox check, weekly report, nightly backup')):null);
-    }
-    if(tab==='usage'&&usage){
-      return React.createElement('div',null,
-        React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:10,marginBottom:20}},
-          [{v:fmtCost(usage.totals.estimatedCostUsd),l:'Total Cost',c:'var(--amber)'},{v:fmtTokens(usage.totals.inputTokens),l:'Tokens In',c:'var(--accent)'},{v:fmtTokens(usage.totals.outputTokens),l:'Tokens Out',c:'var(--green)'},{v:usage.daysTracked,l:'Days',c:'var(--purple)'},{v:fmtCost(usage.avgDailyCost),l:'Avg/Day',c:'var(--blue)'},{v:fmtCost(usage.projected30d),l:'~30d Est',c:'var(--amber)'}].map(function(s,i){return React.createElement(StatCard,{key:i,value:s.v,label:s.l,color:s.c,size:16});})),
-        Object.keys(usage.byModel).length>0?React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},
-          React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:12}},'🧠 By Model'),
-          Object.entries(usage.byModel).sort(function(a,b){return b[1].cost-a[1].cost;}).map(function(entry){var model=entry[0],data=entry[1];var pct=usage.totals.estimatedCostUsd>0?(data.cost/usage.totals.estimatedCostUsd*100):0;
-            return React.createElement('div',{key:model,style:{marginBottom:12}},
-              React.createElement('div',{style:{display:'flex',justifyContent:'space-between',fontSize:12,marginBottom:4}},
-                React.createElement('span',null,React.createElement('b',{style:{color:'var(--accent)'}},model),React.createElement('span',{style:{color:'var(--dim)',marginLeft:8}},data.sessions+' sess')),
-                React.createElement('span',{className:'mono',style:{color:'var(--amber)'}},fmtCost(data.cost))),
-              React.createElement('div',{className:'bar-wrap'},React.createElement('div',{className:'bar',style:{width:Math.max(pct,2)+'%',background:'var(--purple)'}})));})):null,
-        usage.byDay.length>0?React.createElement('div',{className:'card',style:{padding:16}},
-          React.createElement('div',{style:{fontSize:13,fontWeight:600,marginBottom:12}},'📊 Daily Cost (last 30d)'),
-          React.createElement('div',{style:{display:'flex',alignItems:'flex-end',gap:2,height:80}},
-            usage.byDay.map(function(d,i){var max=Math.max.apply(null,usage.byDay.map(function(x){return x.cost;}).concat([0.001]));var h=Math.max((d.cost/max)*70,2);
-              return React.createElement('div',{key:i,title:d.date+': '+fmtCost(d.cost),style:{flex:1,minWidth:3,height:h,background:'var(--accent)',borderRadius:'2px 2px 0 0',opacity:.8}});})),
-          React.createElement('div',{style:{display:'flex',justifyContent:'space-between',marginTop:4}},
-            React.createElement('span',{className:'mono',style:{fontSize:9,color:'var(--dim)'}},usage.byDay[0]&&usage.byDay[0].date),
-            React.createElement('span',{className:'mono',style:{fontSize:9,color:'var(--dim)'}},usage.byDay[usage.byDay.length-1]&&usage.byDay[usage.byDay.length-1].date))):null);
-    }
-    if(tab==='telegram'){
-      return React.createElement('div',null,
-        tgUsers?React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},
-          React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
-            React.createElement('div',{style:{fontSize:14,fontWeight:600}},'📱 Telegram'),
-            React.createElement('span',{className:'badge',style:{color:tgUsers.enabled?'var(--green)':'var(--red)',background:tgUsers.enabled?'var(--green-d)':'var(--red-d)'}},tgUsers.enabled?'● Enabled':'○ Disabled')),
-          tgUsers.botToken?React.createElement('div',{className:'mono',style:{fontSize:12,color:'var(--dim)',marginBottom:8}},'Bot: '+tgUsers.botToken):null,
-          tgUsers.users.length>0?React.createElement('div',null,
-            React.createElement('div',{style:{fontSize:12,fontWeight:600,marginBottom:8,color:'var(--dim)'}},'Approved Users'),
-            tgUsers.users.map(function(u,i){return React.createElement('div',{key:i,className:'mono',style:{fontSize:12,padding:'4px 0',color:'var(--accent)'}},typeof u==='object'?JSON.stringify(u):u);})):
-          React.createElement('div',{style:{fontSize:12,color:'var(--dim)'}},'No approved users yet.')):null,
-        pairing?React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},
-          React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:8}},'🔗 Pairing'),
-          React.createElement('div',{className:'mono',style:{fontSize:12,color:'var(--dim)',whiteSpace:'pre-wrap'}},pairing.output||'No pending'),
-          React.createElement('div',{style:{display:'flex',gap:8,marginTop:12}},
-            React.createElement('input',{id:'pairCode',className:'input',placeholder:'Pairing code...',style:{flex:1}}),
-            React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){var code=document.getElementById('pairCode').value;if(!code)return;var r=await api('/profiles/'+profileId+'/pairing/approve',{method:'POST',body:{code:code}});toast(r.output||'Done','success');loadTab('telegram');}},'Approve'))):null,
-        channels?React.createElement('div',{className:'card',style:{padding:16}},React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:8}},'📡 Channels Config'),React.createElement('pre',{className:'mono',style:{fontSize:11,color:'var(--dim)',whiteSpace:'pre-wrap'}},JSON.stringify(channels,null,2))):null);
-    }
-    if(tab==='history'&&sessions){
-      return React.createElement('div',null,
-        sessions.specialFiles&&sessions.specialFiles.length>0?React.createElement('div',{style:{marginBottom:20}},
-          React.createElement('div',{className:'section-title'},React.createElement('h3',null,'📌 Special Files')),
-          React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:8}},
-            sessions.specialFiles.map(function(f){return React.createElement('div',{key:f.name,className:'card card-click',style:{padding:12},onClick:function(){setMemModal(f);}},
-              React.createElement('div',{style:{fontWeight:600,fontSize:13,color:'var(--accent)'}},f.name),
-              React.createElement('div',{className:'mono',style:{fontSize:10,color:'var(--dim)',marginTop:4,maxHeight:40,overflow:'hidden'}},f.preview&&f.preview.slice(0,100)));}))):null,
-        sessions.memoryFiles&&sessions.memoryFiles.length>0?React.createElement('div',null,
-          React.createElement('div',{className:'section-title'},React.createElement('h3',null,'💬 Memory Log Files'),React.createElement('span',{className:'badge',style:{color:'var(--accent)',background:'var(--accent-d)'}},sessions.memoryFiles.length+' files')),
-          React.createElement('div',{className:'card',style:{padding:0,overflow:'hidden',maxHeight:500,overflowY:'auto'}},
-            sessions.memoryFiles.map(function(f){return React.createElement('div',{key:f.name,className:'mem-file',onClick:function(){setMemModal(f);}},
-              React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
-                React.createElement('span',{style:{fontWeight:600,fontSize:13}},f.name),
-                React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8}},
-                  React.createElement('span',{className:'badge',style:{fontSize:9,color:f.type==='json'?'var(--amber)':'var(--accent)',background:f.type==='json'?'var(--amber-d)':'var(--accent-d)'}},f.type),
-                  React.createElement('span',{className:'mono',style:{fontSize:11,color:'var(--dim)'}},(f.size/1024).toFixed(1)+'KB'))),
-              React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:4,maxHeight:36,overflow:'hidden'}},f.preview));}))):
-        React.createElement('div',{className:'card',style:{padding:20,textAlign:'center',color:'var(--dim)'}},'No memory files found.'));
-    }
-    if(tab==='env'&&envVars){
-      return React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){setEnvRevealed(!envRevealed);setTimeout(function(){loadTab('env');},50);}},envRevealed?'🔒 Mask':'👁 Reveal'),
-          React.createElement('button',{className:'btn btn-sm btn-primary',onClick:function(){setAddingEnv(!addingEnv);}},addingEnv?'✕':'+ Add')),
-        addingEnv?React.createElement('div',{className:'card',style:{padding:14,marginBottom:12}},
-          React.createElement('div',{style:{display:'grid',gridTemplateColumns:'1fr 2fr',gap:8,marginBottom:8}},
-            React.createElement('input',{className:'input',placeholder:'KEY',value:newEnvKey,onChange:function(e){setNewEnvKey(e.target.value.toUpperCase());}}),
-            React.createElement('input',{className:'input',placeholder:'value',value:newEnvVal,onChange:function(e){setNewEnvVal(e.target.value);},type:envRevealed?'text':'password'})),
-          React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){if(!newEnvKey)return;await api('/profiles/'+profileId+'/env/set',{method:'POST',body:{key:newEnvKey,value:newEnvVal}});toast('Saved','success');setNewEnvKey('');setNewEnvVal('');setAddingEnv(false);loadTab('env');}},'Save')):null,
-        React.createElement('div',{className:'card',style:{padding:0,overflow:'hidden'}},
-          Object.entries(envVars).length===0?React.createElement('div',{style:{padding:20,textAlign:'center',color:'var(--dim)'}},'No vars'):
-          Object.entries(envVars).map(function(entry){var k=entry[0],v=entry[1];return React.createElement('div',{key:k,className:'env-row'},
-            React.createElement('div',{style:{flex:1,minWidth:0}},React.createElement('div',{className:'mono',style:{fontSize:12,fontWeight:600,color:'var(--accent)'}},k),React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:2,wordBreak:'break-all'}},v)),
-            React.createElement('button',{className:'btn btn-ghost',style:{color:'var(--red)'},onClick:async function(){if(!confirm('Delete '+k+'?'))return;await api('/profiles/'+profileId+'/env/'+k,{method:'DELETE'});loadTab('env');}},'✕'));})));
-    }
-    if(tab==='models'&&models){
-      var quickModels=['claude-sonnet-4-5-20250514','claude-haiku-4-5-20250514','gpt-4o','gpt-4o-mini','gpt-5-mini','deepseek-chat'];
-      return React.createElement('div',null,
-        React.createElement('div',{className:'card',style:{padding:16,marginBottom:16,borderColor:'rgba(34,211,238,.2)'}},
-          React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:10}},'Quick Model Select'),
-          React.createElement('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
-            quickModels.map(function(m){var isActive=Object.values(models.rawConfig).some(function(v){return String(v)===m;});
-              return React.createElement('button',{key:m,className:'btn btn-sm '+(isActive?'btn-primary':'btn-default'),style:{fontSize:11},onClick:async function(){
-                var target=Object.keys(models.rawConfig).find(function(k){return /model/i.test(k);});
-                if(target){var isEnv=target.indexOf('env:')===0;await api('/profiles/'+profileId+'/models',{method:'PUT',body:{key:isEnv?target.slice(4):target,value:m,target:isEnv?'env':'config'}});}
-                else await api('/profiles/'+profileId+'/models',{method:'PUT',body:{key:'DEFAULT_MODEL',value:m,target:'env'}});
-                toast('Set '+m,'success');loadTab('models');}},m.replace('-20250514','').replace('claude-','').replace('openai/',''));}))),
-        Object.keys(models.rawConfig).length>0?React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:6}},
-          Object.entries(models.rawConfig).map(function(entry){var k=entry[0],v=entry[1];var isEnv=k.indexOf('env:')===0;var dk=isEnv?k.slice(4):k;
-            return React.createElement('div',{key:k,className:'card',style:{padding:14,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}},
-              React.createElement('div',null,
-                React.createElement('span',{className:'mono',style:{fontSize:12,fontWeight:600,color:'var(--accent)'}},dk),
-                React.createElement('span',{className:'badge',style:{marginLeft:6,fontSize:9,color:isEnv?'var(--amber)':'var(--purple)',background:isEnv?'var(--amber-d)':'var(--purple-d)'}},isEnv?'ENV':'CFG'),
-                React.createElement('div',{className:'mono',style:{fontSize:13,marginTop:4}},String(v))),
-              React.createElement('button',{className:'btn btn-xs btn-default',onClick:async function(){var nv=prompt(dk+':',String(v));if(nv!==null){await api('/profiles/'+profileId+'/models',{method:'PUT',body:{key:dk,value:nv,target:isEnv?'env':'config'}});loadTab('models');}}},'Edit'));})):null);
-    }
-    if(tab==='config'&&config!==null){
-      return React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:8}},
-          React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){try{await api('/profiles/'+profileId+'/config',{method:'PUT',body:{config:JSON.parse(config)}});toast('Saved','success');}catch(e){toast(e.message,'error');}}},'💾 Save')),
-        React.createElement('textarea',{value:config,onChange:function(e){setConfig(e.target.value);},className:'mono',style:{width:'100%',minHeight:400,padding:16,background:'var(--bg)',color:'var(--text)',border:'1px solid var(--border)',borderRadius:8,fontSize:12,lineHeight:1.7,resize:'vertical'}}));
-    }
-    if(tab==='soul'&&soul!==null){
-      return React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:6,marginBottom:8}},
-          React.createElement('a',{href:dlUrl('/profiles/'+profileId+'/soul/download'),className:'btn btn-sm btn-default',style:{textDecoration:'none'}},'⬇'),
-          React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){await api('/profiles/'+profileId+'/soul',{method:'PUT',body:{content:soul}});toast('Saved','success');}},'💾 Save')),
-        React.createElement('textarea',{value:soul,onChange:function(e){setSoul(e.target.value);},className:'mono',style:{width:'100%',minHeight:400,padding:16,background:'var(--bg)',color:'var(--text)',border:'1px solid var(--border)',borderRadius:8,fontSize:12,lineHeight:1.7,resize:'vertical'}}));
-    }
-    if(tab==='skills'&&skills!==null){
-      return React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:6}},
-        skills.length===0?React.createElement('div',{className:'card',style:{padding:20,textAlign:'center',color:'var(--dim)'}},'No skills'):
-        skills.map(function(s){return React.createElement('div',{key:s.name,className:'card',style:{padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,opacity:s.enabled?1:.5}},
-          React.createElement('div',{style:{flex:1,minWidth:0}},
-            React.createElement('b',{style:{fontSize:13}},s.name),
-            !s.enabled?React.createElement('span',{className:'badge',style:{color:'var(--amber)',background:'var(--amber-d)',fontSize:10,marginLeft:6}},'OFF'):null,
-            s.description?React.createElement('div',{style:{fontSize:12,color:'var(--dim)',marginTop:2}},s.description):null),
-          React.createElement('div',{style:{display:'flex',gap:4,alignItems:'center',flexShrink:0}},
-            React.createElement('a',{href:dlUrl('/profiles/'+profileId+'/skills/'+s.name+'/download'),className:'btn btn-ghost',style:{textDecoration:'none'}},'⬇'),
-            React.createElement('button',{className:'btn btn-ghost',onClick:function(){setCopyModal(s.name);}},'⧉'),
-            React.createElement('button',{className:'btn btn-ghost',style:{color:'var(--red)'},onClick:async function(){if(!confirm('Delete "'+s.name+'"?'))return;await api('/profiles/'+profileId+'/skills/'+s.name,{method:'DELETE'});loadTab('skills');}},'🗑'),
-            React.createElement('button',{className:'toggle '+(s.enabled?'on':'off'),onClick:async function(){await api('/profiles/'+profileId+'/skills/'+s.name+'/toggle',{method:'POST',body:{enabled:!s.enabled}});loadTab('skills');}},React.createElement('div',{className:'toggle-dot'}))));}));
-    }
-    if(tab==='logs'){
-      return React.createElement('div',null,
-        React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:8}},React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){loadTab('logs');}},'↻')),
-        React.createElement('div',{className:'log-area'},logs||'No logs'));
-    }
-    return null;
-  }
-
-  return React.createElement('div',null,
-    copyModal?React.createElement(CopySkillModal,{skill:copyModal,profileId:profileId,profiles:profiles,onClose:function(){setCopyModal(null);},toast:toast}):null,
-    memModal?React.createElement(MemoryFileModal,{profileId:profileId,file:memModal,onClose:function(){setMemModal(null);if(tab==='history')loadTab('history');},toast:toast}):null,
-    resetModal?React.createElement(ResetProfileModal,{profileId:profileId,onClose:function(){setResetModal(false);},toast:toast}):null,
-    cronAddModal?React.createElement(CronAddModal,{profileId:profileId,onClose:function(){setCronAddModal(false);},toast:toast,onAdded:function(){loadTab('cron');}}):null,
-    React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16,flexWrap:'wrap',gap:8}},
-      React.createElement('div',null,
-        React.createElement('button',{className:'btn btn-ghost',onClick:function(){onNav('dashboard');},style:{marginBottom:4,fontSize:12,color:'var(--accent)'}},'← Back'),
-        React.createElement('h2',{style:{fontSize:20,fontWeight:700}},p.name||p.id,
-          React.createElement('span',{className:'badge',style:{marginLeft:10,fontSize:11,color:p.status==='running'?'var(--green)':'var(--red)',background:p.status==='running'?'var(--green-d)':'var(--red-d)'}},p.status))),
-      React.createElement('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
-        React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){setResetModal(true);}},'🔄 Reset'),
-        React.createElement('a',{href:dlUrl('/profiles/'+profileId+'/backup'),className:'btn btn-sm btn-default',style:{textDecoration:'none'}},'⬇'),
-        React.createElement('button',{className:'btn btn-sm btn-default',onClick:function(){doAction('restart');}},'↻ Restart'),
-        p.status==='running'?React.createElement('button',{className:'btn btn-sm btn-danger',onClick:function(){doAction('stop');}},'⏹ Stop'):React.createElement('button',{className:'btn btn-sm btn-green',onClick:function(){doAction('start');}},'▶ Start'),
-        profileId!=='original'?React.createElement('button',{className:'btn btn-sm btn-danger',onClick:async function(){if(!confirm('Delete "'+profileId+'"?'))return;await api('/profiles/'+profileId,{method:'DELETE'});toast('Removed','success');onNav('dashboard');onNav('refresh');}},'🗑'):null)),
-    React.createElement('div',{className:'tab-bar'},tabs.map(function(t){return React.createElement('button',{key:t.id,className:'tab-btn '+(tab===t.id?'active':''),onClick:function(){setTab(t.id);}},t.l);})),
-    loading?React.createElement('div',{style:{textAlign:'center',padding:20}},React.createElement('span',{className:'spinner'})):null,
-    renderTabContent()
-  );
-}
-
-function PanelUpdates({toast,profileIds}){
-  var[cli,setCli]=useState(null);var[wsData,setWsData]=useState({});var[loading,setLoading]=useState('');
-  var checkCli=async function(){setLoading('cli');setCli(await api('/updates/cli'));setLoading('');};
-  useEffect(function(){checkCli();},[]);
-  return React.createElement('div',null,
-    React.createElement('div',{className:'section-title'},React.createElement('h3',null,'🔄 Updates')),
-    React.createElement('div',{className:'card',style:{padding:14,marginBottom:16}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
-        React.createElement('div',null,React.createElement('b',null,'OpenClaw CLI'),
-          cli?React.createElement('div',{className:'mono',style:{fontSize:12,color:'var(--dim)',marginTop:2}},'Current: '+cli.current+' · Latest: ',React.createElement('span',{style:{color:cli.updateAvailable?'var(--amber)':'var(--green)'}},cli.latest)):null),
-        React.createElement('div',{style:{display:'flex',gap:6}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:checkCli,disabled:loading==='cli'},loading==='cli'?React.createElement('span',{className:'spinner'}):'Check'),
-          cli&&cli.updateAvailable?React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){setLoading('upgrade');var r=await api('/updates/cli/upgrade',{method:'POST'});toast('Updated to '+r.version,'success');checkCli();setLoading('');}},'Update'):null))),
-    React.createElement('div',{className:'section-title'},React.createElement('h3',null,'Workspaces'),React.createElement('span',{className:'mono',style:{fontSize:10,color:'var(--dim)'}},'Click Check individually')),
-    profileIds.map(function(id){return React.createElement('div',{key:id,className:'card',style:{padding:14,marginBottom:6}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
-        React.createElement('div',null,React.createElement('b',null,id),
-          wsData[id]&&wsData[id].isGit?React.createElement('span',{className:'badge',style:{marginLeft:6,color:'var(--purple)',background:'var(--purple-d)',fontSize:10}},'git:'+wsData[id].branch):null,
-          wsData[id]&&wsData[id].dirty?React.createElement('span',{className:'badge',style:{marginLeft:4,color:'var(--amber)',background:'var(--amber-d)',fontSize:10}},'modified'):null,
-          wsData[id]?React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:4}},wsData[id].lastCommit,wsData[id].behindBy>0?React.createElement('span',{style:{color:'var(--amber)'}},' · '+wsData[id].behindBy+' behind'):null):null),
-        React.createElement('div',{style:{display:'flex',gap:6}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:async function(){setLoading(id);var d={};d[id]=await api('/updates/workspace/'+id);setWsData(Object.assign({},wsData,d));setLoading('');},disabled:loading===id},loading===id?React.createElement('span',{className:'spinner'}):'Check'),
-          wsData[id]&&wsData[id].isGit?React.createElement('button',{className:'btn btn-sm btn-default',onClick:async function(){await api('/updates/workspace/'+id+'/pull',{method:'POST'});toast(id+' pulled','success');}},'Pull'):null)));}));
-}
-
-function PanelSecurity({toast}){
-  var[audit,setAudit]=useState(null);var[loading,setLoading]=useState(false);
-  var scan=async function(){setLoading(true);setAudit(await api('/security/audit'));setLoading(false);};
-  useEffect(function(){scan();},[]);
-  if(!audit)return React.createElement('div',{style:{textAlign:'center',padding:40}},React.createElement('span',{className:'spinner'}));
-  var sc={pass:'✓',warn:'⚠',fail:'✕',info:'ℹ'};var clr={pass:'var(--green)',warn:'var(--amber)',fail:'var(--red)',info:'var(--accent)'};var bg={pass:'var(--green-d)',warn:'var(--amber-d)',fail:'var(--red-d)',info:'var(--accent-d)'};
-  var categories=[];audit.checks.forEach(function(c){if(categories.indexOf(c.category)===-1)categories.push(c.category);});
-  return React.createElement('div',null,
-    React.createElement('div',{className:'section-title'},React.createElement('h3',null,'🛡 Security Audit'),React.createElement('button',{className:'btn btn-sm btn-default',onClick:scan,disabled:loading},loading?React.createElement('span',{className:'spinner'}):'↻ Re-scan')),
-    React.createElement('div',{style:{display:'flex',gap:20,alignItems:'center',marginBottom:24,flexWrap:'wrap'}},
-      React.createElement('div',{className:'score-ring',style:{border:'4px solid '+(audit.score>=80?'var(--green)':audit.score>=50?'var(--amber)':'var(--red)'),color:audit.score>=80?'var(--green)':audit.score>=50?'var(--amber)':'var(--red)'}},audit.score),
-      React.createElement('div',{style:{display:'flex',gap:12}},
-        [['pass','Passed'],['warn','Warn'],['fail','Fail'],['info','Info']].map(function(x){return React.createElement('div',{key:x[0],style:{textAlign:'center'}},React.createElement('div',{className:'mono',style:{fontSize:18,fontWeight:700,color:clr[x[0]]}},audit.summary[x[0]]),React.createElement('div',{style:{fontSize:10,color:'var(--dim)',textTransform:'uppercase'}},x[1]));}))),
-    categories.map(function(cat){return React.createElement('div',{key:cat,style:{marginBottom:16}},
-      React.createElement('div',{className:'mono',style:{fontSize:11,fontWeight:700,color:'var(--muted)',textTransform:'uppercase',marginBottom:8}},cat),
-      React.createElement('div',{className:'card',style:{padding:0,overflow:'hidden'}},
-        audit.checks.filter(function(c){return c.category===cat;}).map(function(c,i){return React.createElement('div',{key:i,style:{display:'flex',gap:10,padding:'12px 14px',borderBottom:'1px solid var(--border)',alignItems:'flex-start'}},
-          React.createElement('div',{style:{width:24,height:24,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,flexShrink:0,background:bg[c.status],color:clr[c.status]}},sc[c.status]),
-          React.createElement('div',{style:{flex:1}},React.createElement('b',{style:{fontSize:13}},c.name),React.createElement('span',{className:'badge',style:{marginLeft:6,color:clr[c.status],background:bg[c.status],fontSize:9}},c.severity),
-            React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)',marginTop:4}},c.detail)));})));}));
-}
-
-function PanelAntfarm({toast}){
-  var[s,setS]=useState(null);var[runs,setRuns]=useState('');var[loading,setLoading]=useState(false);
-  var[runWf,setRunWf]=useState('');var[runTask,setRunTask]=useState('');var[running,setRunning]=useState(false);
-  var[sq,setSq]=useState('');var[sr,setSr]=useState('');
-  var load=async function(){setLoading(true);var st=await api('/antfarm/status');setS(st);if(st.installed){var r=await api('/antfarm/runs');setRuns(r.output||'');}setLoading(false);};
-  useEffect(function(){load();},[]);
-  if(!s)return React.createElement('div',{style:{textAlign:'center',padding:40}},React.createElement('span',{className:'spinner'}));
-  if(!s.installed)return React.createElement('div',null,React.createElement('div',{className:'section-title'},React.createElement('h3',null,'🐜 Antfarm')),React.createElement('div',{className:'card',style:{padding:30,textAlign:'center'}},React.createElement('div',{style:{fontSize:32,marginBottom:8}},'🐜'),React.createElement('div',{style:{color:'var(--dim)'}},'Not installed')));
-  return React.createElement('div',null,
-    React.createElement('div',{className:'section-title'},React.createElement('h3',null,'🐜 Antfarm'),React.createElement('button',{className:'btn btn-sm btn-default',onClick:load,disabled:loading},loading?React.createElement('span',{className:'spinner'}):'↻')),
-    React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}},
-      React.createElement(StatCard,{value:'✓',label:'Installed',color:'var(--green)'}),
-      React.createElement(StatCard,{value:s.workflows.length,label:'Workflows',color:'var(--accent)'}),
-      React.createElement(StatCard,{value:s.dashboardRunning?'●':'○',label:'Dashboard',color:s.dashboardRunning?'var(--green)':'var(--dim)'})),
-    React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},
-      React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:12}},'Run Workflow'),
-      React.createElement('div',{style:{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}},s.workflows.map(function(w){return React.createElement('button',{key:w,className:'btn btn-sm '+(runWf===w?'btn-primary':'btn-default'),onClick:function(){setRunWf(w);}},w);})),
-      runWf?React.createElement('div',null,
-        React.createElement('textarea',{className:'input mono',value:runTask,onChange:function(e){setRunTask(e.target.value);},placeholder:'Task for '+runWf+'...',style:{minHeight:80,resize:'vertical',marginBottom:8}}),
-        React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){setRunning(true);await api('/antfarm/run',{method:'POST',body:{workflow:runWf,task:runTask}});toast('Started','success');setRunTask('');load();setRunning(false);},disabled:running||!runTask},running?React.createElement('span',{className:'spinner'}):null,' Run')):null),
-    React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},
-      React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:8}},'Check Status'),
-      React.createElement('div',{style:{display:'flex',gap:8}},
-        React.createElement('input',{className:'input',value:sq,onChange:function(e){setSq(e.target.value);},placeholder:'Run ID...',style:{flex:1}}),
-        React.createElement('button',{className:'btn btn-sm btn-primary',onClick:async function(){var r=await api('/antfarm/runs/'+encodeURIComponent(sq)+'/status');setSr(r.output||'No results');},disabled:!sq},'Check')),
-      sr?React.createElement('div',{className:'log-area',style:{marginTop:8,maxHeight:200}},sr):null),
-    runs?React.createElement('div',{className:'card',style:{padding:16,marginBottom:16}},React.createElement('div',{style:{fontSize:14,fontWeight:600,marginBottom:8}},'Recent Runs'),React.createElement('div',{className:'log-area',style:{maxHeight:300}},runs)):null,
-    React.createElement('div',{className:'card',style:{padding:14}},
-      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
-        React.createElement('div',null,React.createElement('b',null,'Antfarm Dashboard'),React.createElement('div',{className:'mono',style:{fontSize:11,color:'var(--dim)'}},':3333 · '+(s.dashboardRunning?'Running':'Stopped'))),
-        React.createElement('div',{style:{display:'flex',gap:6}},
-          React.createElement('button',{className:'btn btn-sm btn-default',onClick:async function(){await api('/antfarm/dashboard/start',{method:'POST'});toast('Started','success');load();}},'Start'),
-          React.createElement('button',{className:'btn btn-sm btn-danger',onClick:async function(){await api('/antfarm/dashboard/stop',{method:'POST'});toast('Stopped','success');load();}},'Stop')))));
-}
-
-function KeyboardHelp({onClose}){
-  return React.createElement('div',{className:'modal-overlay',onClick:onClose},
-    React.createElement('div',{className:'modal',onClick:function(e){e.stopPropagation();},style:{maxWidth:400}},
-      React.createElement('h3',{style:{marginBottom:16}},'⌨️ Keyboard Shortcuts'),
-      [['1','Dashboard'],['2','Updates'],['3','Security'],['4','Antfarm'],['r','Refresh'],['?','This help'],['Esc','Close modals']].map(function(x){
-        return React.createElement('div',{key:x[0],style:{display:'flex',alignItems:'center',gap:12,marginBottom:8}},React.createElement('span',{className:'kbd'},x[0]),React.createElement('span',{style:{fontSize:13}},x[1]));}),
-      React.createElement('div',{style:{marginTop:16,textAlign:'right'}},React.createElement('button',{className:'btn btn-sm btn-primary',onClick:onClose},'Got it'))));
-}
-
-function App(){
-  var[panel,setPanel]=useState('dashboard');var[profiles,setProfiles]=useState([]);var[system,setSystem]=useState({});
-  var[activeProfile,setActiveProfile]=useState(null);var[loading,setLoading]=useState(true);
-  var[toastMsg,setToastMsg]=useState(null);var[toastType,setToastType]=useState('info');var[mobileOpen,setMobileOpen]=useState(false);
-  var[kbHelp,setKbHelp]=useState(false);
-  var toast=function(msg,type){setToastMsg(msg);setToastType(type||'info');setTimeout(function(){setToastMsg(null);},3500);};
-  var loadData=async function(){setLoading(true);try{var r=await Promise.all([api('/profiles'),api('/system')]);setProfiles(r[0].profiles||[]);setSystem(r[1]);}catch(e){toast('Connection failed','error');}setLoading(false);};
-  useEffect(function(){loadData();},[]);
-  useEffect(function(){function h(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
-    if(e.key==='1')nav('dashboard');else if(e.key==='2')nav('updates');else if(e.key==='3')nav('security');else if(e.key==='4')nav('antfarm');
-    else if(e.key==='r')loadData();else if(e.key==='?')setKbHelp(true);else if(e.key==='Escape')setKbHelp(false);}
-    window.addEventListener('keydown',h);return function(){window.removeEventListener('keydown',h);};},[]);
-  var nav=function(t,id){if(t==='refresh'){loadData();return;}if(t==='profile'){setActiveProfile(id);setPanel('profile');}else setPanel(t);setMobileOpen(false);};
-
-  return React.createElement('div',{className:'app'},
-    kbHelp?React.createElement(KeyboardHelp,{onClose:function(){setKbHelp(false);}}):null,
-    React.createElement('div',{className:'mobile-overlay'+(mobileOpen?' open':''),onClick:function(){setMobileOpen(false);}}),
-    React.createElement('nav',{className:'sidebar'+(mobileOpen?' open':'')},
-      React.createElement('div',{style:{padding:'20px 16px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:10}},
-        React.createElement('span',{style:{color:'var(--accent)',fontSize:24}},'⚡'),
-        React.createElement('div',null,React.createElement('div',{style:{fontSize:16,fontWeight:800,color:'var(--accent)'}},'OpenClaw'),React.createElement('div',{className:'mono',style:{fontSize:10,color:'var(--dim)'}},'COMMAND CENTER v1.5 · SSD'))),
-      React.createElement('div',{style:{padding:'12px 12px 4px'}},
-        React.createElement('div',{className:'mono',style:{fontSize:10,color:'var(--muted)',textTransform:'uppercase',marginBottom:6,paddingLeft:4}},'Navigation'),
-        [['dashboard','◫','Dashboard','1'],['updates','🔄','Updates','2'],['security','🛡','Security','3'],['antfarm','🐜','Antfarm','4']].map(function(x){
-          return React.createElement('button',{key:x[0],className:'nav-btn '+(panel===x[0]?'active':''),onClick:function(){nav(x[0]);}},
-            React.createElement('span',null,x[1]),x[2],React.createElement('span',{className:'kbd',style:{marginLeft:'auto'}},x[3]));})),
-      React.createElement('div',{style:{padding:'4px 12px'}},
-        React.createElement('div',{className:'mono',style:{fontSize:10,color:'var(--muted)',textTransform:'uppercase',marginBottom:6,marginTop:8,paddingLeft:4}},'Profiles'),
-        profiles.map(function(p){return React.createElement('button',{key:p.id,className:'nav-btn '+((panel==='profile'&&activeProfile===p.id)?'active':''),onClick:function(){nav('profile',p.id);}},
-          React.createElement('span',{style:{width:8,height:8,borderRadius:'50%',flexShrink:0,background:p.status==='running'?'var(--green)':p.status==='failed'?'var(--red)':'var(--muted)'}}),
-          p.id,React.createElement('span',{className:'mono',style:{fontSize:10,color:'var(--muted)',marginLeft:'auto'}},':'+p.port));})),
-      React.createElement('div',{style:{marginTop:'auto',padding:12,borderTop:'1px solid var(--border)'}},
-        React.createElement('div',{style:{padding:10,borderRadius:8,background:'var(--bg)',fontSize:11},className:'mono'},
-          React.createElement('div',{style:{color:'var(--dim)',marginBottom:4}},'Server'),
-          React.createElement('div',{style:{color:'var(--green)',display:'flex',alignItems:'center',gap:4}},
-            React.createElement('span',{style:{width:6,height:6,borderRadius:'50%',background:'var(--green)',display:'inline-block'}}),system.hostname||'...'),
-          React.createElement('div',{style:{color:'var(--dim)',marginTop:4,cursor:'pointer'},onClick:function(){setKbHelp(true);}},'⌨️ Shortcuts (?)')))),
-    React.createElement('div',{className:'main'},
-      React.createElement(AlertBanner),
-      React.createElement('div',{className:'mobile-header'},
-        React.createElement('button',{style:{background:'none',border:'none',color:'var(--text)',fontSize:18},onClick:function(){setMobileOpen(true);}},'☰'),
-        React.createElement('div',{style:{display:'flex',alignItems:'center',gap:6}},React.createElement('span',{style:{color:'var(--accent)',fontSize:18}},'⚡'),React.createElement('b',{style:{color:'var(--accent)'}},'OpenClaw')),
-        React.createElement('div',{style:{width:22}})),
-      React.createElement('div',{className:'content'},
-        panel==='dashboard'?React.createElement(PanelDashboard,{profiles:profiles,system:system,loading:loading,onRefresh:loadData,onNav:nav,toast:toast}):null,
-        panel==='profile'?React.createElement(PanelProfile,{profileId:activeProfile,profiles:profiles,toast:toast,onNav:nav}):null,
-        panel==='updates'?React.createElement(PanelUpdates,{toast:toast,profileIds:profiles.map(function(p){return p.id;})}):null,
-        panel==='security'?React.createElement(PanelSecurity,{toast:toast}):null,
-        panel==='antfarm'?React.createElement(PanelAntfarm,{toast:toast}):null)),
-    React.createElement(Toast,{message:toastMsg,type:toastType}));
-}
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+<script src="/vendor/react.production.min.js"></script>
+<script src="/vendor/react-dom.production.min.js"></script>
+<script src="/vendor/babel.min.js"></script>
+<script>
+window.ICONS={home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',grid:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',code:'<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',activity:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',calendar:'<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',barChart:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',database:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',key:'<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',cpu:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>',heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',tool:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',fileText:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',globe:'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',hardDrive:'<line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',dollarSign:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',smartphone:'<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',file:'<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>',monitor:'<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',layers:'<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',menu:'<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',mail:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',rss:'<path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>',messageCircle:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',lock:'<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',check:'<polyline points="20 6 9 17 4 12"/>',x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',share2:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',clipboard:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',refreshCw:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+bookmark:'<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+thumbsUp:'<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/>',
+thumbsDown:'<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/>',
+upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+alertTriangle:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+trash2:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',downloadCloud:'<polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>',gitBranch:'<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'};
+window.icon=function(n,s,c){var d=window.ICONS[n];if(!d)return '';return '<svg xmlns="http://www.w3.org/2000/svg" width="'+(s||16)+'" height="'+(s||16)+'" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+d+'</svg>';};
+window.IC=function(n,s,c,st){return React.createElement('span',{dangerouslySetInnerHTML:{__html:window.icon(n,s||16,c)},style:Object.assign({display:'inline-flex',alignItems:'center',flexShrink:0},st||{})});};
 </script>
+
+<!-- ============================================
+     QuickClaw Dashboard — Modular Architecture
+     Each module is a separate file for easy editing.
+     Load order matters: utilities first, then components,
+     then panels, then the App root last.
+     ============================================ -->
+<script type="text/babel" src="/js/utils.js"></script>
+<script type="text/babel" src="/js/components.js"></script>
+<script type="text/babel" src="/js/modals.js"></script>
+<script type="text/babel" src="/js/wizard.js"></script>
+<script type="text/babel" src="/js/file-browser.js"></script>
+<script type="text/babel" src="/js/panel-dashboard.js"></script>
+<script type="text/babel" src="/js/panel-profile.js"></script>
+<script type="text/babel" src="/js/panel-updates.js"></script>
+<script type="text/babel" src="/js/panel-security.js"></script>
+<script type="text/babel" src="/js/panel-antfarm.js"></script>
+<script type="text/babel" src="/js/panel-news.js"></script>
+<script type="text/babel" src="/js/panel-misc.js"></script>
+<script type="text/babel" src="/js/panel-chat.js"></script>
+<script type="text/babel" src="/js/app.js"></script>
 </body>
 </html>
