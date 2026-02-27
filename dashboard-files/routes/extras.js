@@ -126,18 +126,7 @@ router.get('/api/memory/export', (req, res) => {
   res.send(JSON.stringify({ exportedAt: new Date().toISOString(), files, profiles: st.getProfiles() }, null, 2));
 });
 
-// ═══ CHAT ═══
-router.get('/api/chat/history', (req, res) => res.json({ messages: st.getChatHistory().slice(-100) }));
-router.post('/api/chat/send', (req, res) => {
-  const text = String(req.body?.text || '').trim();
-  if (!text) return res.status(400).json({ ok: false, error: 'text is required' });
-  const rows = st.getChatHistory(); rows.push({ role: 'user', text, at: new Date().toISOString() });
-  let reply = 'Got it. I saved this in local chat history.';
-  if (text.toLowerCase().includes('openai')) reply = 'Use Integrations tab → OpenAI key + Quick Connect.';
-  if (text.toLowerCase().includes('memory')) reply = 'Use Memory tab to create/edit files.';
-  rows.push({ role: 'assistant', text: reply, at: new Date().toISOString() });
-  st.saveChatHistory(rows.slice(-300)); res.json({ ok: true, reply, messages: rows.slice(-40) });
-});
+// ═══ CHAT — handled by routes/chat.js ═══
 
 
 module.exports = router;

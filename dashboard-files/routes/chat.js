@@ -73,7 +73,7 @@ router.get('/api/chat/status', async (req, res) => {
     // Determine best available chat method
     let chatMethod = 'none';
     let chatReady = false;
-    if (gw.running && (hasOpenaiKey || hasOauthToken || hasAnthropicKey)) {
+    if (gw.running) {
       chatMethod = 'gateway';
       chatReady = true;
     } else if (hasOpenaiKey) {
@@ -122,15 +122,41 @@ router.post('/api/chat/send', async (req, res) => {
     const profiles = st.getProfiles();
     const active = profiles.find(p => p.active) || profiles[0];
     const pp = active ? st.profilePaths(active.id) : null;
+    const gw = await h.gatewayState();
 
-    // Gather keys
+    // Gather keys — check multiple locations
     let openaiKey = settings.openaiApiKey || '';
     let anthropicKey = settings.anthropicApiKey || '';
     if (pp) {
-      const env = h.readEnv(pp.envPath);
-      if (!openaiKey && env.OPENAI_API_KEY) openaiKey = env.OPENAI_API_KEY;
-      if (!anthropicKey && env.ANTHROPIC_API_KEY) anthropicKey = env.ANTHROPIC_API_KEY;
+      try {
+        const env = h.readEnv(pp.envPath);
+        if (!openaiKey && env.OPENAI_API_KEY) openaiKey = env.OPENAI_API_KEY;
+        if (!anthropicKey && env.ANTHROPIC_API_KEY) anthropicKey = env.ANTHROPIC_API_KEY;
+      } catch (envErr) { console.log('[chat/send] Could not read profile env:', pp.envPath, envErr.message); }
     }
+    // Also check global .env files
+    if (!openaiKey || !anthropicKey) {
+      for (const envPath of [
+        path.join(h.OPENCLAW_STATE_DIR, '.env'),
+        path.join(h.HOME, '.openclaw', '.env')
+      ]) {
+        try {
+          const gEnv = h.readEnv(envPath);
+          if (!openaiKey && gEnv.OPENAI_API_KEY) openaiKey = gEnv.OPENAI_API_KEY;
+          if (!anthropicKey && gEnv.ANTHROPIC_API_KEY) anthropicKey = gEnv.ANTHROPIC_API_KEY;
+        } catch {}
+      }
+    }
+    // Check process env (set by launch script)
+    if (!openaiKey && process.env.OPENAI_API_KEY) openaiKey = process.env.OPENAI_API_KEY;
+    if (!anthropicKey && process.env.ANTHROPIC_API_KEY) anthropicKey = process.env.ANTHROPIC_API_KEY;
+
+    // Trim keys (env files may have trailing whitespace/newlines)
+    openaiKey = openaiKey.trim();
+    anthropicKey = anthropicKey.trim();
+
+    console.log('[chat/send] msg="' + userMessage.substring(0, 30) + '" openai=' + (openaiKey ? 'yes(' + openaiKey.substring(0, 12) + '...)' : 'NO') +
+      ' anthropic=' + (anthropicKey ? 'yes' : 'no') + ' gw=' + gw.running);
 
     // Load soul/system prompt if available
     let systemPrompt = 'You are a helpful AI assistant running via OpenClaw. Be friendly and concise.';
@@ -157,22 +183,47 @@ router.post('/api/chat/send', async (req, res) => {
     }
     messages.push({ role: 'user', content: userMessage });
 
-    // Try OpenAI-compatible API first
+    // Try gateway API first (most reliable — same as Telegram uses)
+    if (gw.running && gw.ws18789) {
+      try {
+        const gwReply = await callGatewayAPI(18789, null, userMessage);
+        if (gwReply) {
+          console.log('[chat/send] Gateway API success');
+          saveChatMessage(userMessage, gwReply);
+          return res.json({ ok: true, reply: gwReply, method: 'gateway-api' });
+        }
+      } catch (gwErr) {
+        console.log('[chat/send] Gateway API failed:', gwErr.message);
+      }
+    }
+
+    // Try OpenAI-compatible API
     if (openaiKey) {
-      const reply = await callOpenAI(openaiKey, messages, systemPrompt, model || 'gpt-4o-mini');
-      saveChatMessage(userMessage, reply);
-      return res.json({ ok: true, reply, method: 'openai' });
+      try {
+        console.log('[chat/send] Trying OpenAI direct...');
+        const reply = await callOpenAI(openaiKey, messages, systemPrompt, model || 'gpt-4o-mini');
+        saveChatMessage(userMessage, reply);
+        return res.json({ ok: true, reply, method: 'openai' });
+      } catch (oaiErr) {
+        console.error('[chat/send] OpenAI direct failed:', oaiErr.message, oaiErr.stack);
+        // Fall through to try Anthropic or gateway CLI
+      }
+    } else {
+      console.log('[chat/send] No OpenAI key found');
     }
 
     // Try Anthropic
     if (anthropicKey) {
-      const reply = await callAnthropic(anthropicKey, messages, systemPrompt, model || 'claude-sonnet-4-20250514');
-      saveChatMessage(userMessage, reply);
-      return res.json({ ok: true, reply, method: 'anthropic' });
+      try {
+        const reply = await callAnthropic(anthropicKey, messages, systemPrompt, model || 'claude-sonnet-4-20250514');
+        saveChatMessage(userMessage, reply);
+        return res.json({ ok: true, reply, method: 'anthropic' });
+      } catch (antErr) {
+        console.error('Anthropic direct failed:', antErr.message);
+      }
     }
 
     // Try gateway CLI as last resort
-    const gw = await h.gatewayState();
     if (gw.running) {
       const result = await h.run(`echo ${JSON.stringify(userMessage)} | ${h.cliBin()} chat --no-interactive 2>/dev/null`, { timeout: 30000 });
       if (result.ok && result.output) {
@@ -181,8 +232,9 @@ router.post('/api/chat/send', async (req, res) => {
       }
     }
 
-    res.json({ ok: false, error: 'No API keys configured. Click the 🔑 button above to add one.' });
+    res.json({ ok: false, error: 'No working API connection found. Make sure your API key is valid or the gateway is running.' });
   } catch (e) {
+    console.error('Chat send error:', e.message);
     res.json({ ok: false, error: e.message || 'Chat request failed' });
   }
 });
@@ -820,6 +872,124 @@ router.post('/api/chat/enable-voice-replies', async (req, res) => {
   }
 });
 
+// ═══ SAVE INTEGRATION — save credentials for GitHub, Vercel, FTP, Email, Slack, Discord ═══
+router.post('/api/chat/save-integration', async (req, res) => {
+  try {
+    const { type, credentials } = req.body;
+    if (!type || !credentials) return res.status(400).json({ ok: false, error: 'Missing type or credentials' });
+
+    const profiles = st.getProfiles();
+    const active = profiles.find(p => p.active) || profiles[0];
+    if (!active) return res.status(400).json({ ok: false, error: 'No active profile' });
+
+    const pp = st.profilePaths(active.id);
+    const credDir = path.join(pp.configDir, 'credentials');
+    fs.mkdirSync(credDir, { recursive: true });
+
+    // Save based on type
+    switch (type) {
+      case 'github': {
+        // Save to .env as GITHUB_TOKEN
+        const env = h.readEnv(pp.envPath);
+        env.GITHUB_TOKEN = credentials.token;
+        if (credentials.username) env.GITHUB_USERNAME = credentials.username;
+        h.writeEnv(pp.envPath, env);
+        return res.json({ ok: true, note: 'GitHub connected! Your bot can now interact with GitHub repos.' });
+      }
+      case 'vercel': {
+        const env = h.readEnv(pp.envPath);
+        env.VERCEL_TOKEN = credentials.token;
+        h.writeEnv(pp.envPath, env);
+        return res.json({ ok: true, note: 'Vercel connected! Your bot can deploy projects.' });
+      }
+      case 'ftp': {
+        h.writeJson(path.join(credDir, 'ftp.json'), {
+          host: credentials.host, port: parseInt(credentials.port) || 21,
+          username: credentials.username, password: credentials.password,
+          secure: credentials.secure || false
+        });
+        return res.json({ ok: true, note: 'FTP credentials saved! Your bot can upload files to your server.' });
+      }
+      case 'email': {
+        h.writeJson(path.join(credDir, 'smtp.json'), {
+          host: credentials.host, port: parseInt(credentials.port) || 587,
+          username: credentials.username, password: credentials.password,
+          secure: credentials.secure || false, from: credentials.from || credentials.username
+        });
+        return res.json({ ok: true, note: 'Email configured! Your bot can send emails.' });
+      }
+      case 'slack': {
+        const env = h.readEnv(pp.envPath);
+        env.SLACK_BOT_TOKEN = credentials.token;
+        if (credentials.signingSecret) env.SLACK_SIGNING_SECRET = credentials.signingSecret;
+        h.writeEnv(pp.envPath, env);
+        // Also enable in openclaw.json channels
+        try {
+          const ocPath = st.openclawConfigPath();
+          const oc = h.readJson(ocPath, {});
+          oc.channels = oc.channels || {};
+          oc.channels.slack = { enabled: true, botToken: credentials.token };
+          oc.plugins = oc.plugins || {};
+          oc.plugins.entries = oc.plugins.entries || {};
+          oc.plugins.entries.slack = { enabled: true };
+          h.writeJson(ocPath, oc);
+        } catch {}
+        return res.json({ ok: true, note: 'Slack connected! Restart gateway for changes to take effect.' });
+      }
+      case 'discord': {
+        const env = h.readEnv(pp.envPath);
+        env.DISCORD_BOT_TOKEN = credentials.token;
+        h.writeEnv(pp.envPath, env);
+        try {
+          const ocPath = st.openclawConfigPath();
+          const oc = h.readJson(ocPath, {});
+          oc.channels = oc.channels || {};
+          oc.channels.discord = { enabled: true, botToken: credentials.token };
+          oc.plugins = oc.plugins || {};
+          oc.plugins.entries = oc.plugins.entries || {};
+          oc.plugins.entries.discord = { enabled: true };
+          h.writeJson(ocPath, oc);
+        } catch {}
+        return res.json({ ok: true, note: 'Discord connected! Restart gateway for changes to take effect.' });
+      }
+      default:
+        return res.status(400).json({ ok: false, error: 'Unknown integration type: ' + type });
+    }
+  } catch (err) {
+    console.error('save-integration error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// ═══ GET INTEGRATION STATUS — check which integrations are configured ═══
+router.get('/api/chat/integrations', async (req, res) => {
+  try {
+    const profiles = st.getProfiles();
+    const active = profiles.find(p => p.active) || profiles[0];
+    const result = { github: false, vercel: false, ftp: false, email: false, slack: false, discord: false };
+
+    if (active) {
+      const pp = st.profilePaths(active.id);
+      const env = h.readEnv(pp.envPath);
+      // Also check global envs
+      let gEnv = {};
+      try { gEnv = h.readEnv(path.join(h.OPENCLAW_STATE_DIR, '.env')); } catch {}
+
+      result.github = !!(env.GITHUB_TOKEN || gEnv.GITHUB_TOKEN);
+      result.vercel = !!(env.VERCEL_TOKEN || gEnv.VERCEL_TOKEN);
+      result.slack = !!(env.SLACK_BOT_TOKEN || gEnv.SLACK_BOT_TOKEN);
+      result.discord = !!(env.DISCORD_BOT_TOKEN || gEnv.DISCORD_BOT_TOKEN);
+
+      const credDir = path.join(pp.configDir, 'credentials');
+      result.ftp = fs.existsSync(path.join(credDir, 'ftp.json'));
+      result.email = fs.existsSync(path.join(credDir, 'smtp.json'));
+    }
+    res.json({ ok: true, integrations: result });
+  } catch (err) {
+    res.json({ ok: true, integrations: {} });
+  }
+});
+
 // ═══ TELEGRAM DIAGNOSTICS — check all config locations + gateway status ═══
 router.get('/api/chat/telegram-diagnostics', async (req, res) => {
   try {
@@ -943,43 +1113,107 @@ function tryDirectAllowlistApproval(code, activeProfile) {
 }
 
 // ═══ API CALL HELPERS ═══
-function callOpenAI(apiKey, messages, systemPrompt, model) {
-  return new Promise((resolve, reject) => {
-    // Ensure all messages have valid string content
-    const cleanMessages = [{ role: 'system', content: String(systemPrompt || 'You are a helpful assistant.') }];
-    messages.forEach(m => {
-      const content = String(m.content || '').trim();
-      if (content) cleanMessages.push({ role: m.role === 'user' ? 'user' : 'assistant', content });
-    });
 
+// Call the local OpenClaw gateway HTTP API (same as Telegram uses)
+function callGatewayAPI(port, token, message) {
+  return new Promise((resolve, reject) => {
+    // Read gateway config for auth token
+    let gwToken = '';
+    try {
+      const ocPaths = [
+        path.join(h.OPENCLAW_STATE_DIR, 'openclaw.json'),
+        path.join(h.HOME, '.openclaw', 'openclaw.json')
+      ];
+      for (const p of ocPaths) {
+        if (fs.existsSync(p)) {
+          const oc = h.readJson(p, {});
+          if (oc.gateway && oc.gateway.auth && oc.gateway.auth.token) {
+            gwToken = oc.gateway.auth.token;
+            break;
+          }
+        }
+      }
+    } catch {}
+
+    const gwPort = port || 18789;
     const body = JSON.stringify({
-      model: model || 'gpt-4o-mini',
-      messages: cleanMessages,
-      max_tokens: 2048,
-      temperature: 0.7
+      message: message,
+      session: 'dashboard-chat',
     });
 
     const opts = {
-      hostname: 'api.openai.com', port: 443, path: '/v1/chat/completions',
+      hostname: '127.0.0.1', port: gwPort, path: '/api/sessions/dashboard-chat/messages',
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey, 'Content-Length': Buffer.byteLength(body) }
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        ...(gwToken ? { 'Authorization': 'Bearer ' + gwToken } : {})
+      }
     };
 
-    const req = https.request(opts, (res) => {
+    const http = require('http');
+    const req = http.request(opts, (res) => {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => {
         try {
           const j = JSON.parse(data);
-          if (j.error) return reject(new Error(j.error.message || 'OpenAI error'));
-          resolve(j.choices?.[0]?.message?.content || 'No response');
-        } catch (e) { reject(new Error('Failed to parse OpenAI response')); }
+          if (j.reply || j.message || j.content || j.text) {
+            resolve(j.reply || j.message || j.content || j.text);
+          } else if (j.error) {
+            reject(new Error(j.error));
+          } else {
+            // Try to extract text from any response format
+            resolve(typeof j === 'string' ? j : JSON.stringify(j));
+          }
+        } catch (e) {
+          // Non-JSON response — might just be plain text
+          if (data && data.trim() && res.statusCode < 400) resolve(data.trim());
+          else reject(new Error('Gateway returned status ' + res.statusCode));
+        }
       });
     });
-    req.on('error', reject);
-    req.setTimeout(30000, () => { req.destroy(); reject(new Error('OpenAI request timed out')); });
+    req.on('error', (e) => reject(new Error('Gateway not reachable: ' + e.message)));
+    req.setTimeout(30000, () => { req.destroy(); reject(new Error('Gateway timed out')); });
     req.write(body);
     req.end();
+  });
+}
+function callOpenAI(apiKey, messages, systemPrompt, model) {
+  const cleanMessages = [{ role: 'system', content: String(systemPrompt || 'You are a helpful assistant.') }];
+  messages.forEach(m => {
+    const content = String(m.content || '').trim();
+    if (content) cleanMessages.push({ role: m.role === 'user' ? 'user' : 'assistant', content });
+  });
+
+  if (cleanMessages.length < 2) return Promise.reject(new Error('No valid messages to send'));
+
+  const payload = {
+    model: model || 'gpt-4o-mini',
+    messages: cleanMessages,
+    max_tokens: 2048,
+    temperature: 0.7
+  };
+
+  console.log('[callOpenAI] model=' + payload.model + ' msgs=' + cleanMessages.length + ' key=' + apiKey.substring(0, 12) + '...');
+
+  return fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(resp => resp.json())
+  .then(j => {
+    if (j.error) {
+      console.error('[callOpenAI] API error:', JSON.stringify(j.error));
+      throw new Error(j.error.message || 'OpenAI error');
+    }
+    const reply = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+    console.log('[callOpenAI] Success, reply length=' + (reply || '').length);
+    return reply || 'No response';
   });
 }
 
