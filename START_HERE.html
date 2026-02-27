@@ -1,92 +1,1045 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>QuickClaw V3 — Start Here</title>
-  <style>
-    :root{--bg:#0e1116;--card:#161b22;--muted:#9aa4b2;--text:#e6edf3;--ok:#3fb950;--warn:#d29922;--line:#2d333b;--blue:#58a6ff}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Roboto,sans-serif}
-    .wrap{max-width:900px;margin:0 auto;padding:28px 18px 48px}
-    .hero{background:linear-gradient(180deg,#111826,#0e1116);border:1px solid var(--line);border-radius:16px;padding:20px}
-    h1{margin:0 0 8px;font-size:28px} h2{margin:0 0 10px;font-size:19px}
-    p{margin:0 0 10px;color:var(--muted)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
-    code{background:#0f141c;border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:#c9d1d9}
-    .step{display:grid;grid-template-columns:34px 1fr;gap:12px;margin:10px 0}
-    .num{width:34px;height:34px;border-radius:999px;border:1px solid var(--line);display:grid;place-items:center;background:#101723;color:var(--blue);font-weight:700}
-    .pill{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);margin-right:8px}
-    .ok{color:var(--ok)} .warn{color:var(--warn)}
-    ul{margin:8px 0 0 18px;padding:0} li{margin:4px 0}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickClaw — Start Here</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg: #111214;
+            --bg-elevated: #1a1c1f;
+            --bg-card: #1f2225;
+            --border: #2d3035;
+            --border-accent: #3d6e9e;
+            --text: #e8e9eb;
+            --text-secondary: #8b8f96;
+            --text-muted: #5a5e65;
+            --accent: #5b9bd5;
+            --accent-glow: rgba(91, 155, 213, 0.15);
+            --green: #4eca6a;
+            --green-glow: rgba(78, 202, 106, 0.1);
+            --warm: #d4a843;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px 60px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Hero ---- */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 520px;
+        }
+
+        .hero-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--accent-glow);
+            border: 1.5px solid var(--border-accent);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 28px;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ---- Steps ---- */
+        .steps {
+            max-width: 580px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(91, 155, 213, 0.3);
+        }
+
+        .step h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.2px;
+        }
+
+        .step p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .step p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ---- Keyboard shortcut visual ---- */
+        .shortcut-visual {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+
+        .keys {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .key {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .key-plus {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .shortcut-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ---- Command box ---- */
+        .command-box {
+            position: relative;
+            background: #0d0e10;
+            border: 1.5px solid var(--border-accent);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .command-prompt {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .command-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text);
+            flex-grow: 1;
+            word-break: break-all;
+            line-height: 1.5;
+            user-select: all;
+        }
+
+        .copy-btn {
+            flex-shrink: 0;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn.copied {
+            background: var(--green);
+        }
+
+        /* ---- Screenshot hint ---- */
+        .screenshot-hint {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+
+        .screenshot-hint .hint-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--warm);
+            margin-bottom: 6px;
+        }
+
+        .screenshot-hint p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* ---- Terminal mockup ---- */
+        .terminal-mock {
+            background: #0d0e10;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .terminal-titlebar {
+            background: var(--bg-elevated);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ec6a5e; }
+        .terminal-dot.yellow { background: #f4bf4f; }
+        .terminal-dot.green { background: #61c554; }
+
+        .terminal-body {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .terminal-body .t-green { color: var(--green); }
+        .terminal-body .t-cyan { color: var(--accent); }
+        .terminal-body .t-bold { color: var(--text); font-weight: 500; }
+
+        /* ---- Success step ---- */
+        .step-success {
+            border-color: rgba(78, 202, 106, 0.3);
+            background: linear-gradient(135deg, var(--bg-card), rgba(78, 202, 106, 0.04));
+        }
+
+        .step-success .step-number {
+            background: var(--green);
+            box-shadow: 0 2px 8px rgba(78, 202, 106, 0.3);
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            margin-top: 48px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ---- Help toggle ---- */
+        .help-toggle {
+            margin-top: 12px;
+        }
+
+        .help-toggle summary {
+            font-size: 13px;
+            color: var(--accent);
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+
+        .help-toggle summary::-webkit-details-marker { display: none; }
+
+        .help-toggle summary::before {
+            content: "▸ ";
+        }
+
+        .help-toggle[open] summary::before {
+            content: "▾ ";
+        }
+
+        .help-content {
+            margin-top: 12px;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .help-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text);
+        }
+
+        /* ---- Drag and drop demo ---- */
+        .drag-demo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .drag-source {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1.5px dashed var(--border);
+            border-radius: 8px;
+            min-width: 100px;
+        }
+
+        .finder-icon {
+            font-size: 28px;
+        }
+
+        .finder-filename {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            text-align: center;
+            word-break: break-all;
+            max-width: 120px;
+        }
+
+        .drag-arrow {
+            flex-shrink: 0;
+            animation: nudge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes nudge {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(6px); }
+        }
+
+        .drag-target {
+            background: #0d0e10;
+            border: 1.5px solid var(--border-accent);
+            border-radius: 8px;
+            overflow: hidden;
+            min-width: 100px;
+        }
+
+        .mini-terminal-bar {
+            background: var(--bg-elevated);
+            padding: 6px 10px;
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mini-terminal-body {
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ---- Guides section ---- */
+        .guides-header {
+            text-align: center;
+            margin-top: 56px;
+            margin-bottom: 32px;
+            max-width: 520px;
+        }
+
+        .guides-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .guides-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .guide-card {
+            max-width: 580px;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .guide-card summary {
+            padding: 20px 24px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            user-select: none;
+            transition: background 0.15s;
+        }
+
+        .guide-card summary::-webkit-details-marker { display: none; }
+
+        .guide-card summary:hover {
+            background: var(--bg-card-hover, #2a2d32);
+        }
+
+        .guide-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            border-radius: 10px;
+        }
+
+        .guide-summary-text {
+            flex-grow: 1;
+        }
+
+        .guide-summary-text h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .guide-summary-text span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .guide-chevron {
+            flex-shrink: 0;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .guide-card[open] .guide-chevron {
+            transform: rotate(90deg);
+        }
+
+        .guide-body {
+            padding: 0 24px 24px;
+            border-top: 1px solid var(--border);
+            margin-top: -1px;
+            padding-top: 20px;
+        }
+
+        .guide-body p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .guide-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .guide-step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .guide-step-num {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 1px;
+        }
+
+        .guide-step-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .guide-step-text strong {
+            color: var(--text);
+        }
+
+        .guide-step-text code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text);
+        }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .guide-link:hover {
+            text-decoration: underline;
+        }
+
+        .guide-tip {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--warm);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+
+        .guide-tip strong {
+            color: var(--warm);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 600px) {
+            body { padding: 24px 16px 40px; }
+            .hero h1 { font-size: 26px; }
+            .step { padding: 22px 18px; }
+            .command-box { flex-wrap: wrap; }
+            .command-text { font-size: 12px; }
+            .shortcut-visual { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .guide-card summary { padding: 16px 18px; }
+            .guide-body { padding: 0 18px 18px; padding-top: 16px; }
+            .guides-header { margin-top: 40px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <h1>QuickClaw V3 — Start Here</h1>
-      <p>Fast, external-drive-first OpenClaw setup for Mac. This page is for non-technical users and gives the exact click path.</p>
-      <div>
-        <span class="pill">Minimal clicks</span>
-        <span class="pill">External SSD ready</span>
-        <span class="pill">Local dashboard</span>
-      </div>
+
+<!-- ================================================================ -->
+<!-- Hero                                                             -->
+<!-- ================================================================ -->
+<div class="hero">
+    <div class="hero-icon">⚡</div>
+    <h1>Welcome to QuickClaw</h1>
+    <p>One-time setup takes about 2 minutes. No file paths to type.<br>After that, everything works with a double-click.</p>
+</div>
+
+<!-- ================================================================ -->
+<!-- Steps                                                            -->
+<!-- ================================================================ -->
+<div class="steps">
+
+    <!-- Step 1 -->
+    <div class="step">
+        <div class="step-number">1</div>
+        <h2>Open Terminal</h2>
+        <p>Terminal is a built-in app on every Mac. The fastest way to open it:</p>
+
+        <div class="shortcut-visual">
+            <div class="keys">
+                <span class="key">⌘ Cmd</span>
+                <span class="key-plus">+</span>
+                <span class="key">Space</span>
+            </div>
+            <span class="shortcut-label">to open Spotlight, then type <strong>Terminal</strong> and press Enter</span>
+        </div>
+
+        <div class="screenshot-hint">
+            <div class="hint-title">Don't see it?</div>
+            <p>You can also find Terminal in Applications → Utilities → Terminal.</p>
+        </div>
     </div>
 
-    <div class="card">
-      <h2>First-time install (recommended path)</h2>
-      <div class="step"><div class="num">1</div><div>Open this QuickClaw folder in Finder.</div></div>
-      <div class="step"><div class="num">2</div><div>Double-click <code>QuickClaw_Setup.command</code>.</div></div>
-      <div class="step"><div class="num">3</div><div>When prompted for location, choose your external drive (for example: <code>QUICKCLAWv2</code>).</div></div>
-      <div class="step"><div class="num">4</div><div>After install finishes, use scripts from the external drive path:<br><code>/Volumes/&lt;DRIVE_NAME&gt;/QuickClaw</code></div></div>
+    <!-- Step 2 -->
+    <div class="step">
+        <div class="step-number">2</div>
+        <h2>Run the setup file</h2>
+        <p>This is all done on <strong>one line</strong> in Terminal. Here's how:</p>
+
+        <div class="guide-step" style="margin-top: 16px;">
+            <span class="guide-step-num">A</span>
+            <div class="guide-step-text">Type the word <strong>bash</strong> followed by <strong>one space</strong>. <strong style="color: var(--warm);">Do NOT press Enter yet.</strong></div>
+        </div>
+
+        <div class="command-box" style="box-shadow: none; border-color: var(--border);">
+            <span class="command-text">bash </span>
+            <span style="display: inline-block; width: 8px; height: 18px; background: var(--accent); animation: blink 1s step-end infinite; border-radius: 1px; vertical-align: middle;"></span>
+        </div>
+
+        <div class="guide-step">
+            <span class="guide-step-num">B</span>
+            <div class="guide-step-text">Open your QuickClaw folder in <strong>Finder</strong>. Find the file called <strong>QuickClaw_Setup.command</strong>. Drag it from Finder and <strong>drop it into the Terminal window</strong>.</div>
+        </div>
+
+        <div class="drag-demo">
+            <div class="drag-source">
+                <div class="finder-icon">📄</div>
+                <span class="finder-filename">QuickClaw_Setup.command</span>
+            </div>
+            <div class="drag-arrow">
+                <svg width="48" height="24" viewBox="0 0 48 24" fill="none">
+                    <path d="M4 12h36m0 0l-8-7m8 7l-8 7" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="drag-target">
+                <div class="mini-terminal-bar">
+                    <span class="terminal-dot red" style="width:7px;height:7px;"></span>
+                    <span class="terminal-dot yellow" style="width:7px;height:7px;"></span>
+                    <span class="terminal-dot green" style="width:7px;height:7px;"></span>
+                </div>
+                <div class="mini-terminal-body">Terminal</div>
+            </div>
+        </div>
+
+        <p>Terminal will fill in the path automatically. You should now see something like this — all on <strong>one line</strong>:</p>
+
+        <div class="command-box" style="box-shadow: none; border-color: var(--border);">
+            <span class="command-text">bash /Users/you/Downloads/QuickClaw-folder/QuickClaw_Setup.command</span>
+        </div>
+
+        <div class="guide-step">
+            <span class="guide-step-num">C</span>
+            <div class="guide-step-text"><strong style="color: var(--green);">Now press Enter.</strong></div>
+        </div>
+
+        <div class="guide-tip">
+            <strong>Important:</strong> Steps A, B, and C all happen on the same line. You type <code>bash </code>, drag the file in, and only <em>then</em> press Enter. If you accidentally pressed Enter after typing <code>bash</code>, type <code>exit</code> and press Enter to get back to normal, then start over.
+        </div>
     </div>
 
-    <div class="card">
-      <h2>Daily use</h2>
-      <ul>
-        <li><code>QuickClaw_Launch.command</code> — starts gateway + dashboard</li>
-        <li><code>QuickClaw_Stop.command</code> — stops QuickClaw services</li>
-        <li><code>QuickClaw_Verify.command</code> — health checks</li>
-        <li><code>QuickClaw Doctor.command</code> — diagnostics + logs</li>
-      </ul>
+    <!-- Step 3 -->
+    <div class="step">
+        <div class="step-number">3</div>
+        <h2>Follow the prompts</h2>
+        <p>The setup will ask where to install (you can pick an external drive), install everything, and then <strong>automatically open the dashboard in your browser</strong>:</p>
+
+        <div class="terminal-mock">
+            <div class="terminal-titlebar">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+            </div>
+            <div class="terminal-body">
+<span class="t-cyan">╔════════════════════════════════════════════╗</span>
+<span class="t-cyan">║       <span class="t-bold">Welcome to QuickClaw</span>                  ║</span>
+<span class="t-cyan">╚════════════════════════════════════════════╝</span>
+
+  This will:
+    1. Allow all QuickClaw scripts to run on your Mac
+    2. Install OpenClaw and its dependencies
+    3. Launch the dashboard and open your browser
+
+  Ready to start? (Y/n) <span class="t-bold">Y</span>
+
+  <span class="t-green">✓</span>  QuickClaw_Install.command
+  <span class="t-green">✓</span>  QuickClaw_Launch.command
+  <span class="t-green">✓</span>  QuickClaw_Stop.command
+  <span class="t-green">✓</span>  QuickClaw_Verify.command
+  <span class="t-green">✓</span>  dashboard-files/
+
+  <span class="t-green">Done.</span> 5 scripts unlocked.
+
+  Where would you like to install QuickClaw?
+
+  <span class="t-bold">1)</span>  My SSD  <span class="t-cyan">— External drive</span> (450Gi free)
+  <span class="t-bold">2)</span>  Current folder (QuickClaw-main)
+
+  Choose (1-2) [2]: <span class="t-bold">1</span>
+            </div>
+        </div>
+
+        <p>It will ask where to install, then handle everything else automatically. If you have an external SSD plugged in, it'll offer to install there. The whole process usually takes 1–2 minutes, and the dashboard opens on its own when it's done.</p>
     </div>
 
-    <div class="card">
-      <h2>If macOS blocks script opening</h2>
-      <p class="warn">Gatekeeper can block downloaded .command files. Use one of these:</p>
-      <ul>
-        <li>Right-click the file → <b>Open</b> → confirm</li>
-        <li>or System Settings → Privacy & Security → <b>Open Anyway</b></li>
-      </ul>
-      <p style="margin-top:10px">After first successful setup, this usually stops being an issue for this folder.</p>
+    <!-- Step 4: Done -->
+    <div class="step step-success">
+        <div class="step-number">✓</div>
+        <h2>You're all set</h2>
+        <p>Setup is done and the dashboard should have opened in your browser automatically. From now on, just double-click to use QuickClaw:</p>
+
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+                <strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; min-width: 230px;">QuickClaw_Launch.command</strong>
+                <span style="font-size: 13px; color: var(--text-secondary);">Start OpenClaw + dashboard</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+                <strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; min-width: 230px;">QuickClaw_Stop.command</strong>
+                <span style="font-size: 13px; color: var(--text-secondary);">Stop everything</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+                <strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; min-width: 230px;">QuickClaw_Verify.command</strong>
+                <span style="font-size: 13px; color: var(--text-secondary);">Check that everything's healthy</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 10px;">
+                <strong style="font-family: 'JetBrains Mono', monospace; font-size: 13px; min-width: 230px;">QuickClaw Doctor.command</strong>
+                <span style="font-size: 13px; color: var(--text-secondary);">Troubleshoot problems</span>
+            </div>
+        </div>
+
+        <p style="margin-top: 16px;">
+            Dashboard not open? Go to <strong><a href="http://localhost:3000" style="color: var(--accent);">http://localhost:3000</a></strong> in your browser.
+        </p>
     </div>
 
-    <div class="card">
-      <h2>What success looks like</h2>
-      <ul>
-        <li class="ok">Launch output shows dashboard URL and gateway status</li>
-        <li class="ok">Dashboard opens and shows <b>Gateway: RUNNING</b></li>
-        <li class="ok">Root path in dashboard points to your external drive QuickClaw folder</li>
-      </ul>
-    </div>
+</div>
 
-    <div class="card">
-      <h2>Fast connection setup (OpenAI + Telegram)</h2>
-      <ul>
-        <li>Go to <b>Integrations</b> tab in dashboard.</li>
-        <li>For OpenAI: paste API key, then use <b>Quick Connect OpenAI</b>.</li>
-        <li>For Telegram: get bot token from <b>@BotFather</b>, paste token, then use Telegram quick connect/save.</li>
-        <li>After connecting either one, use <b>Apply Settings To Config</b>.</li>
-      </ul>
-    </div>
+<!-- ================================================================ -->
+<!-- Integration Guides                                               -->
+<!-- ================================================================ -->
+<div class="guides-header">
+    <h2>Connect Your Services</h2>
+    <p>Once QuickClaw is running, you can connect these services. Click each one for step-by-step instructions.</p>
+</div>
 
-    <div class="card">
-      <h2>Quick troubleshooting commands</h2>
-      <p class="mono">bash /Volumes/QUICKCLAWv2/QuickClaw/QuickClaw_Stop.command</p>
-      <p class="mono">bash /Volumes/QUICKCLAWv2/QuickClaw/QuickClaw_Launch.command</p>
-      <p class="mono">tail -n 200 /Volumes/QUICKCLAWv2/QuickClaw/logs/dashboard.log</p>
-      <p class="mono">tail -n 200 /Users/&lt;you&gt;/.openclaw/logs/gateway.log</p>
+<!-- Telegram Bot -->
+<details class="guide-card">
+    <summary>
+        <div class="guide-icon">💬</div>
+        <div class="guide-summary-text">
+            <h3>Telegram Bot</h3>
+            <span>Chat with your OpenClaw instance from Telegram</span>
+        </div>
+        <span class="guide-chevron">▸</span>
+    </summary>
+    <div class="guide-body">
+        <p><strong>What this does:</strong> Creates a Telegram bot that talks to your OpenClaw instance, so you can chat with it from your phone or desktop.</p>
+
+        <p><strong>Create your bot:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">1</span>
+            <div class="guide-step-text">Open Telegram and search for <strong>@BotFather</strong> (the official Telegram tool for making bots)</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">2</span>
+            <div class="guide-step-text">Send <code>/newbot</code> to BotFather</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">3</span>
+            <div class="guide-step-text">BotFather will ask you for a <strong>display name</strong> (can be anything, like "My OpenClaw Bot")</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">4</span>
+            <div class="guide-step-text">Then it asks for a <strong>username</strong> — this must end in "bot" (like <code>myclaw_bot</code>). Has to be unique across Telegram.</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">5</span>
+            <div class="guide-step-text">BotFather gives you a <strong>bot token</strong> — a long string like <code>7123456789:AAF...</code>. Copy this. You'll need it next.</div>
+        </div>
+
+        <p><strong>Connect it to OpenClaw:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">6</span>
+            <div class="guide-step-text">Open your OpenClaw config file at <code>openclaw/config/default.yaml</code></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">7</span>
+            <div class="guide-step-text">Add a Telegram section with your bot token:
+                <br><br>
+                <code>telegram:</code><br>
+                &nbsp;&nbsp;<code>bot_token: YOUR_TOKEN_HERE</code>
+            </div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">8</span>
+            <div class="guide-step-text">Save the file, then restart OpenClaw using <strong>QuickClaw_Stop.command</strong> followed by <strong>QuickClaw_Launch.command</strong></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">9</span>
+            <div class="guide-step-text">Open Telegram, find your bot by its username, and send it a message. It should respond through OpenClaw.</div>
+        </div>
+
+        <div class="guide-tip">
+            <strong>Tip:</strong> You can also use BotFather to customize your bot's profile picture and description. Send <code>/mybots</code> to BotFather to manage your existing bots.
+        </div>
     </div>
-  </div>
+</details>
+
+<!-- Claude / Anthropic API Key -->
+<details class="guide-card">
+    <summary>
+        <div class="guide-icon">🔑</div>
+        <div class="guide-summary-text">
+            <h3>Claude (Anthropic) API Key</h3>
+            <span>Use Claude models as your AI provider</span>
+        </div>
+        <span class="guide-chevron">▸</span>
+    </summary>
+    <div class="guide-body">
+        <p><strong>What this does:</strong> Lets OpenClaw use Anthropic's Claude models (like Claude Sonnet or Opus) for conversations.</p>
+
+        <p><strong>Get your API key:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">1</span>
+            <div class="guide-step-text">Go to <a href="https://console.anthropic.com" class="guide-link">console.anthropic.com</a></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">2</span>
+            <div class="guide-step-text"><strong>Sign up</strong> for an account if you don't have one (email + phone verification)</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">3</span>
+            <div class="guide-step-text">Once logged in, click <strong>API Keys</strong> in the left sidebar</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">4</span>
+            <div class="guide-step-text">Click <strong>Create Key</strong>, give it a name (like "QuickClaw"), and copy the key. It starts with <code>sk-ant-...</code></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">5</span>
+            <div class="guide-step-text">You'll need to add billing — go to <strong>Plans & Billing</strong> in the sidebar and add a payment method. API usage is pay-as-you-go.</div>
+        </div>
+
+        <p><strong>Add it to OpenClaw:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">6</span>
+            <div class="guide-step-text">Open <code>openclaw/config/default.yaml</code> and add:
+                <br><br>
+                <code>anthropic:</code><br>
+                &nbsp;&nbsp;<code>api_key: sk-ant-YOUR_KEY_HERE</code>
+            </div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">7</span>
+            <div class="guide-step-text">Restart OpenClaw (Stop, then Launch)</div>
+        </div>
+
+        <div class="guide-tip">
+            <strong>Tip:</strong> Copy the key immediately when it's shown — Anthropic only shows it once. If you lose it, just create a new one.
+        </div>
+    </div>
+</details>
+
+<!-- OpenAI API Key -->
+<details class="guide-card">
+    <summary>
+        <div class="guide-icon">🤖</div>
+        <div class="guide-summary-text">
+            <h3>OpenAI API Key</h3>
+            <span>Use GPT models as your AI provider</span>
+        </div>
+        <span class="guide-chevron">▸</span>
+    </summary>
+    <div class="guide-body">
+        <p><strong>What this does:</strong> Lets OpenClaw use OpenAI's GPT models (like GPT-4o) for conversations.</p>
+
+        <p><strong>Get your API key:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">1</span>
+            <div class="guide-step-text">Go to <a href="https://platform.openai.com" class="guide-link">platform.openai.com</a></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">2</span>
+            <div class="guide-step-text"><strong>Sign up or log in</strong> with your OpenAI account (same account as ChatGPT, if you have one)</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">3</span>
+            <div class="guide-step-text">Click the <strong>gear icon</strong> (Settings) in the top right, then go to <strong>API Keys</strong></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">4</span>
+            <div class="guide-step-text">Click <strong>Create new secret key</strong>, name it, and copy it. It starts with <code>sk-...</code></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">5</span>
+            <div class="guide-step-text">Add billing if needed — go to <strong>Settings → Billing</strong> and add a payment method</div>
+        </div>
+
+        <p><strong>Add it to OpenClaw:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">6</span>
+            <div class="guide-step-text">Open <code>openclaw/config/default.yaml</code> and add:
+                <br><br>
+                <code>openai:</code><br>
+                &nbsp;&nbsp;<code>api_key: sk-YOUR_KEY_HERE</code>
+            </div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">7</span>
+            <div class="guide-step-text">Restart OpenClaw (Stop, then Launch)</div>
+        </div>
+
+        <div class="guide-tip">
+            <strong>Tip:</strong> Like Anthropic, OpenAI only shows the key once. Copy it right away. If you lose it, delete the old one and make a new one.
+        </div>
+    </div>
+</details>
+
+<!-- OpenAI OAuth / Zero Auth -->
+<details class="guide-card">
+    <summary>
+        <div class="guide-icon">🔐</div>
+        <div class="guide-summary-text">
+            <h3>OpenAI OAuth (Zero-Auth)</h3>
+            <span>Connect to OpenAI without managing API keys</span>
+        </div>
+        <span class="guide-chevron">▸</span>
+    </summary>
+    <div class="guide-body">
+        <p><strong>What this does:</strong> Instead of creating and pasting an API key, OAuth lets you sign in to OpenAI directly and authorize OpenClaw to use your account. No keys to copy or manage.</p>
+
+        <p><strong>How to set it up:</strong></p>
+
+        <div class="guide-step">
+            <span class="guide-step-num">1</span>
+            <div class="guide-step-text">Open the QuickClaw dashboard at <a href="http://localhost:3000" class="guide-link">localhost:3000</a></div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">2</span>
+            <div class="guide-step-text">Scroll to the <strong>Add-ons & Integrations</strong> section</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">3</span>
+            <div class="guide-step-text">Find the <strong>OpenAI</strong> card and look for an <strong>Authorize with OpenAI</strong> or <strong>Sign in with OpenAI</strong> option</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">4</span>
+            <div class="guide-step-text">Click it — you'll be redirected to OpenAI's website to sign in and approve the connection</div>
+        </div>
+        <div class="guide-step">
+            <span class="guide-step-num">5</span>
+            <div class="guide-step-text">After approving, you'll be sent back to the dashboard. OpenClaw now has access — no API key needed.</div>
+        </div>
+
+        <p><strong>If OAuth isn't available yet:</strong></p>
+        <p>OAuth support depends on your OpenClaw version and configuration. If you don't see the sign-in option, use the standard API key method above instead. You can check for updates to OpenClaw which may add OAuth support for additional providers.</p>
+
+        <div class="guide-tip">
+            <strong>Tip:</strong> OAuth is the easier option when it's available — nothing to copy, nothing to lose. It uses your existing OpenAI account and billing. You can revoke access anytime from your OpenAI account settings under "Authorized applications."
+        </div>
+    </div>
+</details>
+
+<!-- ================================================================ -->
+<!-- Footer                                                           -->
+<!-- ================================================================ -->
+<div class="footer">
+    <p>
+        QuickClaw is a hobby project by <a href="https://guyingoldglasses.com">Guy in Gold Glasses</a><br>
+        Need help? <a href="https://github.com/guyingoldglasses/QuickClaw/issues">Open an issue on GitHub</a>
+    </p>
+</div>
+
+<!-- ================================================================ -->
+<!-- Script                                                           -->
+<!-- ================================================================ -->
+<script>
+    // No JavaScript needed for the drag-and-drop approach.
+    // The page is fully static — users type bash, drag the file, press Enter.
+</script>
+
 </body>
 </html>
