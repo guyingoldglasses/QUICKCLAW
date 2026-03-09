@@ -34,8 +34,7 @@
       "title": "QuickClaw Installer",
       "contents": [
         { "x": 130, "y": 150, "type": "file" },
-        { "x": 370, "y": 150, "type": "link", "path": "/Applications" },
-        { "x": 250, "y": 300, "type": "file", "path": "Open QuickClaw.command" }
+        { "x": 370, "y": 150, "type": "link", "path": "/Applications" }
       ]
     },
     "files": [

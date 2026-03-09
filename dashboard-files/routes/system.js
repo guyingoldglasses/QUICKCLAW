@@ -23,12 +23,21 @@ router.get('/api/status', async (req, res) => {
   });
 });
 
+// Cache system info for 15 seconds to avoid spawning many child processes on rapid requests
+let _sysCache = null;
+let _sysCacheTime = 0;
 router.get('/api/system', async (req, res) => {
+  const now = Date.now();
+  if (_sysCache && (now - _sysCacheTime) < 15000) {
+    // Update only cheap fields
+    _sysCache.uptime = `${Math.floor(os.uptime() / 3600)}h ${Math.floor((os.uptime() % 3600) / 60)}m`;
+    return res.json(_sysCache);
+  }
   const gw = await h.gatewayState();
   const diskR = h.runSync("df -h / | tail -1 | awk '{print $3\"/\"$2\" (\"$5\" used)\"}'");
   const memR = h.runSync("vm_stat | awk '/Pages free/{free=$3}/Pages active/{active=$3}/Pages speculative/{spec=$3}END{total=free+active+spec; printf \"%.1fG\", (active*4096)/1073741824}'");
   const ocVer = h.runSync(`${h.cliBin()} --version 2>/dev/null`);
-  res.json({
+  _sysCache = {
     hostname: os.hostname(), nodeVersion: process.version, platform: process.platform,
     uptime: `${Math.floor(os.uptime() / 3600)}h ${Math.floor((os.uptime() % 3600) / 60)}m`,
     diskUsage: diskR.output || 'unknown', memInfo: memR.output || `${Math.round(os.freemem() / 1073741824)}G free of ${Math.round(os.totalmem() / 1073741824)}G`,
@@ -36,7 +45,9 @@ router.get('/api/system', async (req, res) => {
     quickclawRoot: h.ROOT, installDir: h.INSTALL_DIR,
     gateway: { running: gw.running, ws18789: gw.ws18789, port5000: gw.port5000 },
     dashboardPort: h.PORT, profiles: st.getProfiles().length
-  });
+  };
+  _sysCacheTime = now;
+  res.json(_sysCache);
 });
 
 router.get('/api/system/storage', async (req, res) => {
@@ -97,11 +108,13 @@ router.post('/api/gateway/start', async (req, res) => {
 });
 router.post('/api/gateway/stop', async (req, res) => {
   const result = await h.gatewayExec(`${h.gatewayStopCommand()} >> "${path.join(h.LOG_DIR, 'gateway.log')}" 2>&1`);
-  const gw = await h.gatewayState();
+  h.invalidateGatewayCache();
+  const gw = await h.gatewayState(true);
   res.json({ ok: !gw.running, message: !gw.running ? 'gateway stopped' : 'gateway stop attempted', result, gateway: gw });
 });
 router.post('/api/gateway/restart', async (req, res) => {
   await h.gatewayExec(`${h.gatewayStopCommand()} >> "${path.join(h.LOG_DIR, 'gateway.log')}" 2>&1`);
+  h.invalidateGatewayCache();
   const result = await h.gatewayFullStart(path.join(h.LOG_DIR, 'gateway.log'));
   res.json({ ok: result.ok, message: result.ok ? 'gateway restarted' : 'gateway restart attempted', log: result.log, gateway: result.gateway });
 });

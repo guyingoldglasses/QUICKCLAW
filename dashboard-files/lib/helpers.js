@@ -110,16 +110,36 @@ function makePkcePair() {
   return { verifier, challenge };
 }
 
-// ═══ Gateway state ═══
-async function gatewayState() {
+// ═══ Gateway state (cached to avoid spawning 3+ child processes per call) ═══
+let _gwStateCache = null;
+let _gwStateCacheTime = 0;
+const GW_STATE_TTL = 8000; // cache for 8 seconds
+
+async function gatewayState(forceRefresh) {
+  const now = Date.now();
+  if (!forceRefresh && _gwStateCache && (now - _gwStateCacheTime) < GW_STATE_TTL) {
+    return _gwStateCache;
+  }
   const ws18789 = portListeningSync(18789);
   const ws5000 = portListeningSync(5000);
-  const profileEnv = _profileEnvFn ? _profileEnvFn() : {};
-  const status = await run(`${cliBin()} gateway status`, { cwd: INSTALL_DIR, env: { ...process.env, ...profileEnv } });
-  const txt = `${status.stdout}\n${status.stderr}`;
-  const looksRunning = /Runtime:\s*running|listening on ws:\/\/127\.0\.0\.1:18789|gateway\s+running/i.test(txt);
-  return { running: ws18789 || ws5000 || looksRunning, ws18789, port5000: ws5000, statusText: txt.trim() };
+  // Only run the expensive CLI status check if ports aren't listening
+  let looksRunning = false;
+  let statusText = '';
+  if (!ws18789 && !ws5000) {
+    const profileEnv = _profileEnvFn ? _profileEnvFn() : {};
+    const status = await run(`${cliBin()} gateway status`, { cwd: INSTALL_DIR, env: { ...process.env, ...profileEnv } });
+    statusText = `${status.stdout}\n${status.stderr}`.trim();
+    looksRunning = /Runtime:\s*running|listening on ws:\/\/127\.0\.0\.1:18789|gateway\s+running/i.test(statusText);
+  } else {
+    statusText = ws18789 ? 'listening on port 18789' : 'listening on port 5000';
+  }
+  _gwStateCache = { running: ws18789 || ws5000 || looksRunning, ws18789, port5000: ws5000, statusText };
+  _gwStateCacheTime = now;
+  return _gwStateCache;
 }
+
+/** Invalidate the gateway state cache (call after start/stop/restart). */
+function invalidateGatewayCache() { _gwStateCache = null; _gwStateCacheTime = 0; }
 
 /**
  * Run a gateway command with the active profile's config directory set.
@@ -229,7 +249,8 @@ async function gatewayFullStart(logFile) {
 
   // Step 4: Wait and check
   await new Promise(r => setTimeout(r, 5000));
-  const gw = await gatewayState();
+  invalidateGatewayCache();
+  const gw = await gatewayState(true);
   log.push('running: ' + gw.running);
 
   return { ok: gw.running, gateway: gw, log };
@@ -242,5 +263,5 @@ module.exports = {
   run, runSync, portListeningSync, tailFile, readJson, writeJson, readEnv, writeEnv,
   maskKey, cleanCli, cliBin, gatewayStartCommand, gatewayStopCommand,
   ensureWithinRoot, b64url, makePkcePair, gatewayState,
-  setProfileEnvProvider, gatewayExec, gatewayFullStart
+  setProfileEnvProvider, gatewayExec, gatewayFullStart, invalidateGatewayCache
 };

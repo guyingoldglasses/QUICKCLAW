@@ -149,9 +149,8 @@ async function launchSpecificInstall(baseDir) {
 
   processManager = new ProcessManager(baseDir);
   processManager.on('log', (msg) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('install:log', msg);
-    }
+    // Only forward to renderer during installation (not dashboard mode)
+    // Dashboard window doesn't listen for install:log, so sending is wasted IPC
     console.log(msg);
   });
 

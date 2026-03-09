@@ -289,9 +289,13 @@
       }, []);
 
       /* ── Launch dashboard after complete ────────────────────── */
+      const [launching, setLaunching] = useState(false);
       const launchDashboard = useCallback(async () => {
-        if (shortcutOn && window.electronAPI) await window.electronAPI.createShortcut();
-        if (window.electronAPI) await window.electronAPI.launchDashboard();
+        setLaunching(true);
+        try {
+          if (shortcutOn && window.electronAPI) await window.electronAPI.createShortcut();
+          if (window.electronAPI) await window.electronAPI.launchDashboard();
+        } catch { /* ok */ }
       }, [shortcutOn]);
 
       /* ── Go to manager from other screens ───────────────────── */
@@ -522,20 +526,35 @@
           <div className={`screen ${screen === 'complete' ? 'visible' : ''}`}>
             <Confetti />
             <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-              <div className="complete">
-                <div className="check">✅</div>
-                <h2>You're All Set!</h2>
-                <p>QuickClaw has been installed successfully.</p>
-              </div>
-              <div className="shortcut-row">
-                <span>Add to Desktop?</span>
-                <button className={`toggle ${shortcutOn ? 'on' : 'off'}`} onClick={() => setShortcutOn(v => !v)}>
-                  <div className="toggle-dot"/>
-                </button>
-              </div>
-              <div className="actions" style={{marginTop:16}}>
-                <button className="btn btn-green" onClick={launchDashboard}>🚀 Launch Dashboard</button>
-              </div>
+              {launching ? (
+                <div className="complete">
+                  <div className="bolt" style={{fontSize:48}}>⚡</div>
+                  <h2>Launching Dashboard...</h2>
+                  <p style={{marginTop:8}}>Starting services and opening your dashboard. This may take a moment.</p>
+                  <div className="progress-wrap" style={{marginTop:20,width:'80%',maxWidth:300,margin:'20px auto 0'}}>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{width:'100%',animation:'shimmer 1.2s infinite'}}></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="complete">
+                    <div className="check">✅</div>
+                    <h2>You're All Set!</h2>
+                    <p>QuickClaw has been installed successfully.</p>
+                  </div>
+                  <div className="shortcut-row">
+                    <span>Add to Desktop?</span>
+                    <button className={`toggle ${shortcutOn ? 'on' : 'off'}`} onClick={() => setShortcutOn(v => !v)}>
+                      <div className="toggle-dot"/>
+                    </button>
+                  </div>
+                  <div className="actions" style={{marginTop:16}}>
+                    <button className="btn btn-green" onClick={launchDashboard}>🚀 Launch Dashboard</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </>

@@ -246,8 +246,14 @@ class ProcessManager extends EventEmitter {
 
     this.gatewayProc.stdout.pipe(logStream, { end: false });
     this.gatewayProc.stderr.pipe(logStream, { end: false });
-    this.gatewayProc.stdout.on('data', d => this.emit('log', `[gw] ${d.toString().trim()}`));
-    this.gatewayProc.stderr.on('data', d => this.emit('log', `[gw] ${d.toString().trim()}`));
+    // Throttle log emission to avoid flooding — max 1 emit per 2 seconds
+    let _gwLastLog = 0;
+    const throttledLog = (d) => {
+      const now = Date.now();
+      if (now - _gwLastLog > 2000) { _gwLastLog = now; this.emit('log', `[gw] ${d.toString().trim().slice(0, 200)}`); }
+    };
+    this.gatewayProc.stdout.on('data', throttledLog);
+    this.gatewayProc.stderr.on('data', throttledLog);
     logStream.on('error', () => {}); // prevent uncaught stream errors
 
     fs.writeFileSync(gwPidFile, String(this.gatewayProc.pid));
@@ -339,8 +345,14 @@ class ProcessManager extends EventEmitter {
 
     this.dashboardProc.stdout.pipe(logStream, { end: false });
     this.dashboardProc.stderr.pipe(logStream, { end: false });
-    this.dashboardProc.stdout.on('data', d => this.emit('log', `[dash] ${d.toString().trim()}`));
-    this.dashboardProc.stderr.on('data', d => this.emit('log', `[dash] ${d.toString().trim()}`));
+    // Throttle log emission to avoid flooding
+    let _dashLastLog = 0;
+    const throttledDashLog = (d) => {
+      const now = Date.now();
+      if (now - _dashLastLog > 2000) { _dashLastLog = now; this.emit('log', `[dash] ${d.toString().trim().slice(0, 200)}`); }
+    };
+    this.dashboardProc.stdout.on('data', throttledDashLog);
+    this.dashboardProc.stderr.on('data', throttledDashLog);
     logStream.on('error', () => {}); // prevent uncaught stream errors
 
     fs.writeFileSync(pidFile, String(this.dashboardProc.pid));
