@@ -1139,6 +1139,9 @@ function callGatewayAPI(port, token, message) {
     const body = JSON.stringify({
       message: message,
       session: 'dashboard-chat',
+      channel: 'api',
+      tts: false,
+      format: 'text',
     });
 
     const opts = {
@@ -1158,13 +1161,18 @@ function callGatewayAPI(port, token, message) {
       res.on('end', () => {
         try {
           const j = JSON.parse(data);
-          if (j.reply || j.message || j.content || j.text) {
-            resolve(j.reply || j.message || j.content || j.text);
+          // Extract text reply — handle voice note responses by pulling the transcript/text
+          const textReply = j.reply || j.message || j.content || j.text
+            || j.transcript || j.response
+            || (j.data && (j.data.reply || j.data.text || j.data.content || j.data.transcript));
+          if (textReply && typeof textReply === 'string' && !textReply.includes('[Voice note')) {
+            resolve(textReply);
           } else if (j.error) {
             reject(new Error(j.error));
           } else {
-            // Try to extract text from any response format
-            resolve(typeof j === 'string' ? j : JSON.stringify(j));
+            // Try to extract text from any response format — skip voice note markers
+            const fallback = typeof j === 'string' ? j : JSON.stringify(j);
+            resolve(fallback.replace(/\[Voice note response\]/g, '').trim() || fallback);
           }
         } catch (e) {
           // Non-JSON response — might just be plain text
