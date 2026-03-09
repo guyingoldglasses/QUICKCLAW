@@ -15,7 +15,7 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.2.1",
+    "@electron/notarize": "^2.5.0",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1"
   },
@@ -24,20 +24,33 @@
     "productName": "QuickClaw",
     "afterSign": "build/notarize.js",
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "assets/icon.icns",
       "category": "public.app-category.developer-tools",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "identity": "Developer ID Application"
+      "identity": "Developer ID Application",
+      "notarize": false
     },
     "dmg": {
       "title": "QuickClaw Installer",
       "contents": [
-        { "x": 130, "y": 150, "type": "file" },
-        { "x": 370, "y": 150, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        },
+        {
+          "x": 370,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "files": [
@@ -49,7 +62,10 @@
       {
         "from": "dashboard-files",
         "to": "dashboard-files",
-        "filter": ["**/*", "!node_modules/**"]
+        "filter": [
+          "**/*",
+          "!node_modules/**"
+        ]
       },
       {
         "from": "QuickClaw_Stop.command",
