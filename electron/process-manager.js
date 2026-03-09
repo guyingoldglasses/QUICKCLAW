@@ -29,6 +29,39 @@ function run(cmd, opts) {
 function fileExists(p) { try { return fs.existsSync(p); } catch { return false; } }
 function ensureDir(p) { fs.mkdirSync(p, { recursive: true }); }
 
+/** Resolve full path to node binary — needed in packaged Electron where bare 'node' isn't on PATH. */
+function getNodePath() {
+  // Check common Homebrew and system locations
+  const candidates = [
+    '/opt/homebrew/bin/node',       // Apple Silicon Homebrew
+    '/usr/local/bin/node',          // Intel Homebrew
+    '/usr/bin/node',                // System node
+  ];
+  for (const p of candidates) {
+    if (fileExists(p)) return p;
+  }
+  // Try to find it via which (won't work in all contexts but worth a try)
+  try {
+    const result = execSync('which node', { encoding: 'utf8', timeout: 5000 }).trim();
+    if (result && fileExists(result)) return result;
+  } catch { /* ok */ }
+  // Fallback — hope it's on PATH
+  return 'node';
+}
+
+/** Resolve full path to npm binary. */
+function getNpmPath() {
+  const candidates = [
+    '/opt/homebrew/bin/npm',
+    '/usr/local/bin/npm',
+    '/usr/bin/npm',
+  ];
+  for (const p of candidates) {
+    if (fileExists(p)) return p;
+  }
+  return 'npm';
+}
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /** Check if a port is in use. */
@@ -230,8 +263,24 @@ class ProcessManager extends EventEmitter {
     // Find openclaw binary
     const installDir = path.join(this.baseDir, 'openclaw');
     const localBin = path.join(installDir, 'node_modules/.bin/openclaw');
-    const cmd = fileExists(localBin) ? localBin : 'npx';
-    const args = fileExists(localBin) ? ['gateway', '--port', '18789'] : ['openclaw', 'gateway', '--port', '18789'];
+    let cmd, args;
+    if (fileExists(localBin)) {
+      cmd = localBin;
+      args = ['gateway', '--port', '18789'];
+    } else {
+      // npx may not be on PATH in packaged app — use full path
+      const npxPath = getNpmPath().replace(/npm$/, 'npx');
+      cmd = fileExists(npxPath) ? npxPath : 'npx';
+      args = ['openclaw', 'gateway', '--port', '18789'];
+    }
+
+    // Ensure brew paths are in env PATH so spawned processes can find node
+    const brewBin = '/opt/homebrew/bin';
+    const brewSbin = '/opt/homebrew/sbin';
+    const localBrew = '/usr/local/bin';
+    if (!env.PATH.includes(brewBin)) {
+      env.PATH = `${brewBin}:${brewSbin}:${localBrew}:${env.PATH}`;
+    }
 
     const gwLog = path.join(this.logDir, 'gateway.log');
     const logStream = fs.createWriteStream(gwLog, { flags: 'a' });
@@ -291,7 +340,7 @@ class ProcessManager extends EventEmitter {
     // Install deps if missing
     if (!fileExists(path.join(dashDir, 'node_modules'))) {
       this.emit('log', 'Installing dashboard dependencies...');
-      try { execSync('npm install --omit=dev', { cwd: dashDir, timeout: 120_000 }); }
+      try { execSync(`${getNpmPath()} install --omit=dev`, { cwd: dashDir, timeout: 120_000 }); }
       catch (e) { this.emit('log', `npm install error: ${e.message}`); }
     }
 
@@ -324,8 +373,11 @@ class ProcessManager extends EventEmitter {
 
     this.dashboardPort = port;
 
+    const brewPaths = '/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin';
+    const currentPath = process.env.PATH || '/usr/bin:/bin:/usr/sbin:/sbin';
     const env = {
       ...process.env,
+      PATH: currentPath.includes('/opt/homebrew/bin') ? currentPath : `${brewPaths}:${currentPath}`,
       QUICKCLAW_ROOT: this.baseDir,
       DASHBOARD_PORT: String(port),
       OPENCLAW_STATE_DIR: openclawHome,
@@ -336,7 +388,9 @@ class ProcessManager extends EventEmitter {
     const logStream = fs.createWriteStream(dbLog, { flags: 'a' });
     logStream.write(`\n--- Dashboard start: ${new Date().toISOString()} ---\n`);
 
-    this.dashboardProc = spawn('node', ['server.js'], {
+    const nodeBin = getNodePath();
+    this.emit('log', `Using node: ${nodeBin}`);
+    this.dashboardProc = spawn(nodeBin, ['server.js'], {
       cwd: dashDir,
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
