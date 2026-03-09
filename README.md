@@ -10,31 +10,13 @@ Made by [GuyInGoldGlasses.com](https://guyingoldglasses.com)
 
 ## Install
 
-Download **[`InstallQuickClaw.command`](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)** and double-click it. That's it — it downloads the app, installs it to Applications, and launches it automatically.
+1. **[Download InstallQuickClaw.command](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)** — right-click this link and choose **"Download Linked File"** (Safari) or **"Save Link As"** (Chrome).
+2. **Double-click** the downloaded file in Finder. If macOS asks to confirm, click **Open**.
+3. **Done.** The script downloads QuickClaw, installs it, and launches it automatically. From then on, just open QuickClaw from Applications or Spotlight.
 
 > **Note:** QuickClaw currently supports macOS on Apple Silicon (M1/M2/M3/M4). Intel Mac support is planned for a future release.
 
-> **Manual install:** If you prefer, you can download the `.dmg` directly from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before opening it.
-
----
-
-## What You Get
-
-- **One-click installer** — A guided setup wizard walks you through every step. No terminal, no copy-pasting commands.
-- **Built-in dashboard** — A local web-based command center for managing your OpenClaw instance, profiles, security, chat, and more.
-- **Multi-install support** — Run OpenClaw on your internal drive, an external drive, or both. QuickClaw detects and manages all of them.
-- **Automatic service management** — QuickClaw starts and stops the OpenClaw gateway and dashboard server for you, with health checks and graceful shutdown.
-- **Desktop shortcut** — Creates a native macOS alias on your Desktop so you can launch with a double-click.
-
----
-
-## Quick Start
-
-### 1. Download and Install
-
-1. Download and double-click **[`InstallQuickClaw.command`](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)**.
-2. If macOS asks to confirm opening the file, click **Open**.
-3. The script downloads, installs, and launches QuickClaw automatically. From then on, just open QuickClaw from Applications or Spotlight like any other app.
+> **Manual install:** If you prefer, download the `.dmg` from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before opening.
 
 ### 2. Run the Setup Wizard
 
