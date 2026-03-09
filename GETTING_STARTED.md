@@ -18,25 +18,21 @@ This guide walks you through everything from downloading QuickClaw to having Ope
 
 ---
 
-## Step 1: Download QuickClaw
+## Step 1: Install QuickClaw
 
-Go to the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest) and download **QuickClaw-1.0.0-arm64.dmg**.
+Download **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)** from the GitHub repo and double-click it.
 
-Once downloaded, double-click the `.dmg` file. A window will appear showing the QuickClaw app icon and an arrow pointing to your Applications folder. Drag **QuickClaw** to **Applications** to install it.
+If macOS asks you to confirm opening the file, click **Open**.
 
----
+The script will automatically download QuickClaw, install it to your Applications folder, and launch it. The whole process takes about a minute depending on your internet speed.
 
-## Step 2: Open QuickClaw for the First Time
+> **That's all there is to it.** From now on, open QuickClaw from Applications or Spotlight (`Cmd + Space` → type "QuickClaw") like any other app.
 
-For the very first launch, double-click **`Open QuickClaw.command`** — this file is included in the `.dmg` alongside the app. It prepares QuickClaw for macOS and launches it automatically.
-
-> **What does this do?** Because QuickClaw isn't signed with an Apple Developer certificate yet, macOS blocks it by default. The launcher script clears that block so the app runs normally. You only need to do this once — after that, open QuickClaw directly from Applications or Spotlight (`Cmd + Space` → type "QuickClaw") like any other app.
-
-If macOS asks you to confirm opening the `.command` file, click **Open**.
+> **Prefer to install manually?** Download the `.dmg` from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), open it, drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before launching.
 
 ---
 
-## Step 3: The Setup Wizard
+## Step 2: The Setup Wizard
 
 On first launch, QuickClaw opens the setup wizard — a dark-themed window that guides you through installation.
 
@@ -73,7 +69,7 @@ Each step shows a green checkmark when complete. A terminal window at the bottom
 
 ---
 
-## Step 4: The Dashboard
+## Step 3: The Dashboard
 
 Once setup finishes, QuickClaw automatically launches the dashboard in your default browser. This is your command center for managing OpenClaw.
 

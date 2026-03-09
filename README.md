@@ -8,11 +8,13 @@ Made by [GuyInGoldGlasses.com](https://guyingoldglasses.com)
 
 ---
 
-## Download
+## Install
 
-Head to the [**Releases**](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest) page and download **QuickClaw-1.0.0-arm64.dmg** (Apple Silicon) or the **.zip** if you prefer.
+Download **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)** and double-click it. That's it — it downloads the app, installs it to Applications, and launches it automatically.
 
 > **Note:** QuickClaw currently supports macOS on Apple Silicon (M1/M2/M3/M4). Intel Mac support is planned for a future release.
+
+> **Manual install:** If you prefer, you can download the `.dmg` directly from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before opening it.
 
 ---
 
@@ -30,11 +32,9 @@ Head to the [**Releases**](https://github.com/guyingoldglasses/QUICKCLAW/release
 
 ### 1. Download and Install
 
-1. Download the `.dmg` from [Releases](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest).
-2. Open the `.dmg` and drag **QuickClaw** into your **Applications** folder.
-3. **First launch:** Double-click **`Open QuickClaw.command`** (included in the `.dmg`). This prepares QuickClaw for macOS and launches it. You only need to do this once — after that, open QuickClaw directly from Applications like any other app.
-
-> **Why the extra step?** QuickClaw isn't signed with an Apple Developer certificate yet, so macOS blocks it by default. The launcher script handles this automatically — no Terminal needed.
+1. Download and double-click **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)**.
+2. If macOS asks to confirm opening the file, click **Open**.
+3. The script downloads, installs, and launches QuickClaw automatically. From then on, just open QuickClaw from Applications or Spotlight like any other app.
 
 ### 2. Run the Setup Wizard
 
