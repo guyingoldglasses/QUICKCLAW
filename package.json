@@ -15,12 +15,14 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.2.1",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1"
   },
   "build": {
     "appId": "com.guyingoldglasses.quickclaw",
     "productName": "QuickClaw",
+    "afterSign": "build/notarize.js",
     "mac": {
       "target": ["dmg", "zip"],
       "icon": "assets/icon.icns",
@@ -28,7 +30,8 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "identity": "Developer ID Application"
     },
     "dmg": {
       "title": "QuickClaw Installer",

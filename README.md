@@ -20,8 +20,8 @@ Or if you prefer the quick version:
 4. Open **QuickClaw** from Applications. Done!
 
 > **Note:** QuickClaw currently supports macOS on Apple Silicon (M1/M2/M3/M4). Intel Mac support is planned for a future release.
->
-> **Why the Terminal step?** macOS blocks apps that aren't signed with a paid Apple certificate. We're working on signing QuickClaw so this step won't be needed in the future.
+
+> **About the Terminal step:** If QuickClaw is signed and notarized (the default download), you can skip step 3 — just drag to Applications and open. If macOS blocks the app (this can happen if the signing certificate has expired or you're building from source), use the terminal command in step 3. This is safe and simply removes the macOS quarantine flag. QuickClaw is open-source — you can always verify the code yourself.
 
 ### 2. Run the Setup Wizard
 
@@ -106,6 +106,26 @@ npm run dist
 ## Upgrading from the Script-Based Version
 
 If you previously used the shell-script version of QuickClaw (with `.command` files and `START_HERE.html`), your existing OpenClaw data is fully compatible. When the QuickClaw app detects an existing installation, it will offer to migrate your data so nothing is lost.
+
+---
+
+## Open-Source Continuity
+
+QuickClaw is MIT-licensed and designed to work forever, even if the original developer account or signing certificate becomes unavailable. Here's what happens in different scenarios:
+
+**If the app is signed (normal download):** Just drag to Applications and open. No terminal needed.
+
+**If the signing certificate expires or is unavailable:** macOS will block the app with a "damaged" or "unidentified developer" warning. To fix this, open Terminal and run:
+
+```
+xattr -cr /Applications/QuickClaw.app
+```
+
+Then open QuickClaw normally. This is a one-time step that tells macOS the app is safe.
+
+**If you're building from source:** Clone the repo, run `npm install` and `npm run dist`, then use the same `xattr -cr` command above on the built app.
+
+The `xattr -cr` command is harmless — it simply removes the macOS quarantine flag that Apple adds to downloaded files. QuickClaw's full source code is available in this repo for anyone to audit.
 
 ---
 

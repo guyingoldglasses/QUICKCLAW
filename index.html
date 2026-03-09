@@ -93,16 +93,20 @@
       <!-- Step 2 -->
       <div class="step">
         <div class="step-number">2</div>
-        <h3>Allow QuickClaw to open</h3>
-        <p>Since QuickClaw isn't from the App Store, macOS blocks it by default. To fix this, open <strong>Terminal</strong> (press <strong>Cmd + Space</strong>, type "Terminal", hit Enter) and paste this command:</p>
+        <h3>Open QuickClaw</h3>
+        <p>Open <strong>QuickClaw</strong> from your Applications folder. If macOS opens it normally, skip to Step 3. If macOS says the app is "damaged" or from an "unidentified developer," use the fix below.</p>
+        <div class="tip">
+          <div class="tip-label">&#9888;&#65039; macOS blocking the app?</div>
+          <p>Open <strong>Terminal</strong> (press <strong>Cmd + Space</strong>, type "Terminal", hit Enter) and paste this command:</p>
+        </div>
         <div class="cmd-box" onclick="copyCommand(this)">
           <span class="cmd-text">xattr -cr /Applications/QuickClaw.app</span>
           <button class="copy-btn" onclick="copyCommand(this.parentElement); event.stopPropagation();">Copy</button>
         </div>
-        <p style="margin-top:12px;">Press <strong>Enter</strong> to run it. That's the only time you'll ever need Terminal.</p>
+        <p style="margin-top:12px;">Press <strong>Enter</strong>, then open QuickClaw again. This is a one-time fix.</p>
         <div class="tip">
-          <div class="tip-label">&#128161; Why is this needed?</div>
-          <p>Apple requires developers to pay $99/year to sign apps. QuickClaw is free and open-source, so macOS doesn't recognize it yet. This command simply tells your Mac it's safe to open. We're working on getting it signed so this step won't be needed in the future.</p>
+          <div class="tip-label">&#128161; Why might this happen?</div>
+          <p>macOS quarantines downloaded apps as a security measure. Signed releases open without issue, but if you're building from source or the signing certificate has expired, you'll need this command. It's safe — it just removes the quarantine flag. QuickClaw is <a href="https://github.com/guyingoldglasses/QUICKCLAW" style="color:var(--blue)">fully open-source</a> so you can always verify the code.</p>
         </div>
       </div>
 

@@ -20,15 +20,17 @@ This guide walks you through everything from downloading QuickClaw to having Ope
 
 ## Step 1: Install QuickClaw
 
-Go to the [QuickClaw GitHub page](https://github.com/guyingoldglasses/QUICKCLAW) and **right-click** the **"Download InstallQuickClaw.command"** link, then choose **"Download Linked File"** (Safari) or **"Save Link As"** (Chrome) to save it to your Mac.
+1. Download **[QuickClaw-1.0.0-arm64.dmg](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest/download/QuickClaw-1.0.0-arm64.dmg)** from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest).
+2. Open the `.dmg` and drag **QuickClaw** into your **Applications** folder.
+3. Open **QuickClaw** from Applications.
 
-Once downloaded, find the file in your Downloads folder and **double-click it**. If macOS asks you to confirm, click **Open**.
+If the app is signed and notarized, it will open without any issues. If macOS shows a warning that the app is "damaged" or from an "unidentified developer" (this can happen if the signing certificate has expired or you built from source), open Terminal and run:
 
-The script will automatically download QuickClaw, install it to your Applications folder, and launch it. The whole process takes about a minute depending on your internet speed.
+```
+xattr -cr /Applications/QuickClaw.app
+```
 
-> **That's all there is to it.** From now on, open QuickClaw from Applications or Spotlight (`Cmd + Space` → type "QuickClaw") like any other app.
-
-> **Prefer to install manually?** Download the `.dmg` from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), open it, drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before launching.
+Then open QuickClaw again. This is a safe, one-time command that removes the macOS quarantine flag. QuickClaw is [fully open-source](https://github.com/guyingoldglasses/QUICKCLAW) — you can always verify the code yourself.
 
 ---
 
@@ -120,7 +122,7 @@ After installation, QuickClaw can create a macOS alias on your Desktop for quick
 ## Troubleshooting
 
 **QuickClaw won't open (macOS blocks it / says "damaged")**
-Make sure you used the **Open QuickClaw.command** launcher for the first launch. If you skipped that step, you can still fix it by double-clicking the `.command` file now (re-open the `.dmg` if needed). Alternatively, open Terminal and run: `xattr -cr /Applications/QuickClaw.app`
+Open Terminal and run: `xattr -cr /Applications/QuickClaw.app` — then open QuickClaw again. This happens when the app isn't signed or the signing certificate has expired. It's a one-time fix.
 
 **Installation fails at a step**
 Check the terminal log at the bottom of the installer window for specific error messages. Common causes: no internet connection, insufficient disk space, or a corporate firewall blocking downloads.
