@@ -114,12 +114,19 @@ async function stepHomebrew(p, log) {
   for (const bp of brewPaths) {
     if (fileExists(bp)) {
       log(`Found Homebrew at ${bp}`);
+      // Ensure Homebrew bin dirs are in PATH for all subsequent commands
+      const brewPrefix = path.dirname(path.dirname(bp));
+      const brewBin = path.join(brewPrefix, 'bin');
+      const brewSbin = path.join(brewPrefix, 'sbin');
+      if (!process.env.PATH.includes(brewBin)) {
+        process.env.PATH = `${brewBin}:${brewSbin}:${process.env.PATH}`;
+      }
       try {
         const { stdout } = await run(`${bp} shellenv`);
-        // Parse and apply environment
+        // Parse and apply environment (skip PATH — we already set it above)
         for (const line of stdout.split('\n')) {
           const m = line.match(/export\s+(\w+)="([^"]+)"/);
-          if (m) process.env[m[1]] = m[2];
+          if (m && m[1] !== 'PATH') process.env[m[1]] = m[2];
         }
       } catch { /* ok */ }
       brewFound = true;
@@ -145,11 +152,17 @@ async function stepHomebrew(p, log) {
     // Source env after install
     for (const bp of brewPaths) {
       if (fileExists(bp)) {
+        const brewPrefix = path.dirname(path.dirname(bp));
+        const brewBin = path.join(brewPrefix, 'bin');
+        const brewSbin = path.join(brewPrefix, 'sbin');
+        if (!process.env.PATH.includes(brewBin)) {
+          process.env.PATH = `${brewBin}:${brewSbin}:${process.env.PATH}`;
+        }
         try {
           const { stdout } = await run(`${bp} shellenv`);
           for (const line of stdout.split('\n')) {
             const m = line.match(/export\s+(\w+)="([^"]+)"/);
-            if (m) process.env[m[1]] = m[2];
+            if (m && m[1] !== 'PATH') process.env[m[1]] = m[2];
           }
         } catch { /* ok */ }
         brewFound = true;
