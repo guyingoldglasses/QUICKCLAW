@@ -10,13 +10,18 @@ Made by [GuyInGoldGlasses.com](https://guyingoldglasses.com)
 
 ## Install
 
-1. **[Download InstallQuickClaw.command](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)** — right-click this link and choose **"Download Linked File"** (Safari) or **"Save Link As"** (Chrome).
-2. **Double-click** the downloaded file in Finder. If macOS asks to confirm, click **Open**.
-3. **Done.** The script downloads QuickClaw, installs it, and launches it automatically. From then on, just open QuickClaw from Applications or Spotlight.
+**&#9889; [Click here for the Install Guide](https://guyingoldglasses.github.io/QUICKCLAW/)** — a visual walkthrough that takes you through the three steps to get QuickClaw running.
+
+Or if you prefer the quick version:
+
+1. Download **[QuickClaw-1.0.0-arm64.dmg](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest/download/QuickClaw-1.0.0-arm64.dmg)** from Releases.
+2. Open the `.dmg` and drag **QuickClaw** to **Applications**.
+3. Open **Terminal**, paste `xattr -cr /Applications/QuickClaw.app` and press Enter.
+4. Open **QuickClaw** from Applications. Done!
 
 > **Note:** QuickClaw currently supports macOS on Apple Silicon (M1/M2/M3/M4). Intel Mac support is planned for a future release.
-
-> **Manual install:** If you prefer, download the `.dmg` from the [Releases page](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest), drag QuickClaw to Applications, then run `xattr -cr /Applications/QuickClaw.app` in Terminal before opening.
+>
+> **Why the Terminal step?** macOS blocks apps that aren't signed with a paid Apple certificate. We're working on signing QuickClaw so this step won't be needed in the future.
 
 ### 2. Run the Setup Wizard
 
