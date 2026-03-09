@@ -19,7 +19,7 @@ const HOME = os.homedir();
 
 function run(cmd, opts = {}) {
   return new Promise((resolve, reject) => {
-    exec(cmd, { timeout: 300_000, ...opts }, (err, stdout, stderr) => {
+    exec(cmd, { timeout: 300_000, env: process.env, ...opts }, (err, stdout, stderr) => {
       if (err) return reject(Object.assign(err, { stdout, stderr }));
       resolve({ stdout: stdout.toString(), stderr: stderr.toString() });
     });
@@ -28,12 +28,19 @@ function run(cmd, opts = {}) {
 
 function runStream(cmd, args, opts, onLine) {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { shell: true, ...opts });
+    const child = spawn(cmd, args, { shell: true, env: process.env, ...opts });
     child.stdout?.on('data', d => d.toString().split('\n').filter(Boolean).forEach(onLine));
     child.stderr?.on('data', d => d.toString().split('\n').filter(Boolean).forEach(onLine));
     child.on('close', code => code === 0 ? resolve() : reject(new Error(`Exit code ${code}`)));
     child.on('error', reject);
   });
+}
+
+// Resolve brew to its full path so it works in any shell context
+function getBrewPath() {
+  const paths = ['/opt/homebrew/bin/brew', '/usr/local/bin/brew'];
+  for (const p of paths) { if (fileExists(p)) return p; }
+  return 'brew'; // fallback
 }
 
 function fileExists(p) { try { return fs.existsSync(p); } catch { return false; } }
@@ -196,7 +203,7 @@ async function stepNodeJS(p, log) {
   if (!nodeOk) {
     p(3, 'Node.js', 'working', 'Installing Node.js via Homebrew...');
     log('Installing Node.js...');
-    await runStream('brew', ['install', 'node'], {}, log);
+    await runStream(getBrewPath(), ['install', 'node'], {}, log);
     try {
       const { stdout } = await run('node -v');
       log(`Node.js ${stdout.trim()} installed`);
