@@ -10,7 +10,7 @@ Made by [GuyInGoldGlasses.com](https://guyingoldglasses.com)
 
 ## Install
 
-Download **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)** and double-click it. That's it — it downloads the app, installs it to Applications, and launches it automatically.
+Download **[`InstallQuickClaw.command`](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)** and double-click it. That's it — it downloads the app, installs it to Applications, and launches it automatically.
 
 > **Note:** QuickClaw currently supports macOS on Apple Silicon (M1/M2/M3/M4). Intel Mac support is planned for a future release.
 
@@ -32,7 +32,7 @@ Download **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyin
 
 ### 1. Download and Install
 
-1. Download and double-click **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)**.
+1. Download and double-click **[`InstallQuickClaw.command`](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)**.
 2. If macOS asks to confirm opening the file, click **Open**.
 3. The script downloads, installs, and launches QuickClaw automatically. From then on, just open QuickClaw from Applications or Spotlight like any other app.
 

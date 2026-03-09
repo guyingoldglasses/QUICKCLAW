@@ -20,7 +20,7 @@ This guide walks you through everything from downloading QuickClaw to having Ope
 
 ## Step 1: Install QuickClaw
 
-Download **[`Install QuickClaw.command`](https://raw.githubusercontent.com/guyingoldglasses/QUICKCLAW/main/Install%20QuickClaw.command)** from the GitHub repo and double-click it.
+Download **[`InstallQuickClaw.command`](https://github.com/guyingoldglasses/QUICKCLAW/raw/main/InstallQuickClaw.command)** from the GitHub repo and double-click it.
 
 If macOS asks you to confirm opening the file, click **Open**.
 
