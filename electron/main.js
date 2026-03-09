@@ -220,8 +220,10 @@ function registerIPC() {
         : 'This Mac';
       registerInstall(result.baseDir, label);
 
-      // Update state
+      // Update state and set this as the active install
       appState = detect(getAppPath());
+      appState.activeInstall = appState.installs.find(i => i.baseDir === result.baseDir)
+        || appState.installs[0];
 
       return { success: true, baseDir: result.baseDir };
     } catch (err) {
@@ -267,9 +269,13 @@ function registerIPC() {
 
   // ── Window: switch to dashboard ─────────────────────────────
   ipcMain.handle('window:dashboard', async () => {
-    if (!appState?.activeInstall) return { success: false, error: 'No active install' };
+    // Find the install to launch — prefer activeInstall, fall back to first healthy one
+    const install = appState?.activeInstall
+      || appState?.installs?.find(i => i.healthy)
+      || appState?.installs?.[0];
+    if (!install) return { success: false, error: 'No install found' };
     try {
-      return await launchSpecificInstall(appState.activeInstall.baseDir);
+      return await launchSpecificInstall(install.baseDir);
     } catch (err) {
       return { success: false, error: err.message };
     }
