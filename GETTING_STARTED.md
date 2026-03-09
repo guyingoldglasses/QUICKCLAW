@@ -28,16 +28,11 @@ Once downloaded, double-click the `.dmg` file. A window will appear showing the 
 
 ## Step 2: Open QuickClaw for the First Time
 
-Open QuickClaw from your Applications folder (or Spotlight — press `Cmd + Space` and type "QuickClaw").
+For the very first launch, double-click **`Open QuickClaw.command`** — this file is included in the `.dmg` alongside the app. It prepares QuickClaw for macOS and launches it automatically.
 
-**If macOS blocks the app:** Since QuickClaw isn't notarized with Apple yet, macOS Gatekeeper may prevent it from opening. Here's how to allow it:
+> **What does this do?** Because QuickClaw isn't signed with an Apple Developer certificate yet, macOS blocks it by default. The launcher script clears that block so the app runs normally. You only need to do this once — after that, open QuickClaw directly from Applications or Spotlight (`Cmd + Space` → type "QuickClaw") like any other app.
 
-1. Open **System Settings** (or System Preferences on older macOS).
-2. Go to **Privacy & Security**.
-3. Scroll down — you'll see a message about QuickClaw being blocked.
-4. Click **Open Anyway** and confirm.
-
-You only need to do this once.
+If macOS asks you to confirm opening the `.command` file, click **Open**.
 
 ---
 
@@ -128,8 +123,8 @@ After installation, QuickClaw can create a macOS alias on your Desktop for quick
 
 ## Troubleshooting
 
-**QuickClaw won't open (macOS blocks it)**
-Go to System Settings → Privacy & Security → click "Open Anyway" next to the QuickClaw message.
+**QuickClaw won't open (macOS blocks it / says "damaged")**
+Make sure you used the **Open QuickClaw.command** launcher for the first launch. If you skipped that step, you can still fix it by double-clicking the `.command` file now (re-open the `.dmg` if needed). Alternatively, open Terminal and run: `xattr -cr /Applications/QuickClaw.app`
 
 **Installation fails at a step**
 Check the terminal log at the bottom of the installer window for specific error messages. Common causes: no internet connection, insufficient disk space, or a corporate firewall blocking downloads.

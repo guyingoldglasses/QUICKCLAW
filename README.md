@@ -32,9 +32,9 @@ Head to the [**Releases**](https://github.com/guyingoldglasses/QUICKCLAW/release
 
 1. Download the `.dmg` from [Releases](https://github.com/guyingoldglasses/QUICKCLAW/releases/latest).
 2. Open the `.dmg` and drag **QuickClaw** into your **Applications** folder.
-3. Double-click **QuickClaw** in Applications to launch it.
+3. **First launch:** Double-click **`Open QuickClaw.command`** (included in the `.dmg`). This prepares QuickClaw for macOS and launches it. You only need to do this once — after that, open QuickClaw directly from Applications like any other app.
 
-> **First launch:** macOS may show a security prompt since the app isn't notarized yet. If you see "QuickClaw can't be opened," go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
+> **Why the extra step?** QuickClaw isn't signed with an Apple Developer certificate yet, so macOS blocks it by default. The launcher script handles this automatically — no Terminal needed.
 
 ### 2. Run the Setup Wizard
 
