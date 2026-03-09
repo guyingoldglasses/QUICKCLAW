@@ -72,9 +72,14 @@ function createInstallerWindow() {
 }
 
 function createDashboardWindow(port) {
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+  const oldWindow = mainWindow;
+  mainWindow = null;
+  if (oldWindow && !oldWindow.isDestroyed()) {
+    oldWindow.removeAllListeners('closed');
+    oldWindow.close();
+  }
 
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 900,
@@ -89,12 +94,15 @@ function createDashboardWindow(port) {
     }
   });
 
-  mainWindow.loadURL(`http://localhost:${port}`);
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    mainWindow.webContents.send('dashboard:ready');
+  mainWindow = win;
+  win.loadURL(`http://localhost:${port}`);
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) {
+      win.show();
+      win.webContents.send('dashboard:ready');
+    }
   });
-  mainWindow.on('closed', () => { mainWindow = null; });
+  win.on('closed', () => { if (mainWindow === win) mainWindow = null; });
 }
 
 /* ------------------------------------------------------------------ */
