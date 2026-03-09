@@ -244,15 +244,17 @@ class ProcessManager extends EventEmitter {
       detached: false
     });
 
-    this.gatewayProc.stdout.pipe(logStream);
-    this.gatewayProc.stderr.pipe(logStream);
+    this.gatewayProc.stdout.pipe(logStream, { end: false });
+    this.gatewayProc.stderr.pipe(logStream, { end: false });
     this.gatewayProc.stdout.on('data', d => this.emit('log', `[gw] ${d.toString().trim()}`));
     this.gatewayProc.stderr.on('data', d => this.emit('log', `[gw] ${d.toString().trim()}`));
+    logStream.on('error', () => {}); // prevent uncaught stream errors
 
     fs.writeFileSync(gwPidFile, String(this.gatewayProc.pid));
 
     this.gatewayProc.on('exit', (code) => {
       this.emit('log', `Gateway exited with code ${code}`);
+      try { logStream.end(); } catch { /* ok */ }
       try { fs.unlinkSync(gwPidFile); } catch { /* ok */ }
       this.gatewayProc = null;
     });
@@ -335,15 +337,17 @@ class ProcessManager extends EventEmitter {
       detached: false
     });
 
-    this.dashboardProc.stdout.pipe(logStream);
-    this.dashboardProc.stderr.pipe(logStream);
+    this.dashboardProc.stdout.pipe(logStream, { end: false });
+    this.dashboardProc.stderr.pipe(logStream, { end: false });
     this.dashboardProc.stdout.on('data', d => this.emit('log', `[dash] ${d.toString().trim()}`));
     this.dashboardProc.stderr.on('data', d => this.emit('log', `[dash] ${d.toString().trim()}`));
+    logStream.on('error', () => {}); // prevent uncaught stream errors
 
     fs.writeFileSync(pidFile, String(this.dashboardProc.pid));
 
     this.dashboardProc.on('exit', (code) => {
       this.emit('log', `Dashboard exited with code ${code}`);
+      try { logStream.end(); } catch { /* ok */ }
       try { fs.unlinkSync(pidFile); } catch { /* ok */ }
       this.dashboardProc = null;
     });
