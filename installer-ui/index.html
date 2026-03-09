@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickClaw</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#09090b;--surface:#0f0f12;--surface2:#18181b;--border:#27272a;--border2:#3f3f46;--text:#e4e4e7;--dim:#71717a;--muted:#52525b;--accent:#e4e4e7;--green:#4ade80;--green-d:rgba(74,222,128,.1);--red:#f87171;--red-d:rgba(248,113,113,.1);--amber:#fbbf24;--amber-d:rgba(251,191,36,.1);--blue:#93c5fd;--purple:#c4b5fd}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;overflow:hidden;-webkit-app-region:drag}
+    button,input{-webkit-app-region:no-drag}
+    .app{display:flex;flex-direction:column;height:100vh;padding:48px 40px 32px}
+    .titlebar{height:40px;position:fixed;top:0;left:0;right:0;z-index:100}
+
+    /* ── Hero ── */
+    .hero{text-align:center;margin-bottom:32px}
+    .hero .bolt{font-size:40px;margin-bottom:8px;animation:pulse-glow 2s ease-in-out infinite}
+    .hero h1{font-size:26px;font-weight:700;letter-spacing:-.02em}
+    .hero p{color:var(--dim);font-size:13px;margin-top:4px}
+    @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 8px rgba(74,222,128,.3))}50%{filter:drop-shadow(0 0 20px rgba(74,222,128,.6))}}
+
+    /* ── Steps ── */
+    .steps{flex:1;overflow-y:auto;margin-bottom:16px;padding-right:8px}
+    .steps::-webkit-scrollbar{width:4px}.steps::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .step{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:10px;margin-bottom:4px;transition:all .3s;position:relative}
+    .step.active{background:var(--surface);border:1px solid var(--border)}
+    .step.done{opacity:.7}.step.error{border:1px solid rgba(248,113,113,.3)}
+    .step:not(.active):not(.done):not(.error){opacity:.35;border:1px solid transparent}
+    .step-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;transition:all .3s}
+    .step:not(.active):not(.done):not(.error) .step-icon{background:var(--surface2);color:var(--muted)}
+    .step.active .step-icon{background:var(--green-d);color:var(--green);animation:ring-pulse 1s linear infinite;border:2px solid var(--green)}
+    .step.done .step-icon{background:var(--green-d);color:var(--green)}
+    .step.error .step-icon{background:var(--red-d);color:var(--red)}
+    @keyframes ring-pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.4)}100%{box-shadow:0 0 0 10px rgba(74,222,128,0)}}
+    .step-content{flex:1;min-width:0}
+    .step-name{font-weight:600;font-size:13px}
+    .step-msg{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* ── Terminal ── */
+    .terminal{background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.5;color:var(--green);max-height:110px;min-height:80px;overflow-y:auto;padding:10px 12px;margin-bottom:16px;white-space:pre-wrap;word-break:break-all}
+    .terminal::-webkit-scrollbar{width:3px}.terminal::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    /* ── Progress ── */
+    .progress-wrap{margin-bottom:20px}
+    .progress-bar{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:6px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:4px;transition:width .5s ease;position:relative}
+    .progress-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15));animation:shimmer 1.2s infinite}
+    @keyframes shimmer{0%{transform:translateX(-40px)}100%{transform:translateX(40px)}}
+    .progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+
+    /* ── Buttons ── */
+    .btn{padding:10px 24px;border-radius:10px;font-size:14px;font-family:'JetBrains Mono',monospace;font-weight:600;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+    .btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{filter:brightness(1.1)}
+    .btn-green{background:var(--green);color:var(--bg)}.btn-green:hover{filter:brightness(1.1)}
+    .btn-ghost{background:transparent;color:var(--dim);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text)}
+    .btn-sm{padding:7px 14px;font-size:12px}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+    /* ── Location cards ── */
+    .loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;overflow-y:auto;max-height:300px}
+    .loc-card{padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;transition:all .2s;text-align:center}
+    .loc-card:hover{border-color:var(--border2);background:var(--surface2)}
+    .loc-card.selected{border-color:var(--green);background:var(--green-d)}
+    .loc-card .icon{font-size:24px;margin-bottom:6px}
+    .loc-card .name{font-weight:600;font-size:13px}
+    .loc-card .path{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* ── Migration options ── */
+    .migrate-opts{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+    .migrate-opt{padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);cursor:pointer;transition:all .2s;font-size:13px}
+    .migrate-opt:hover{border-color:var(--border2)}
+    .migrate-opt.selected{border-color:var(--green);background:var(--green-d)}
+    .migrate-opt .label{font-weight:600}.migrate-opt .desc{font-size:11px;color:var(--dim);margin-top:2px}
+
+    /* ── Install cards (manager) ── */
+    .install-list{display:flex;flex-direction:column;gap:8px;margin:16px 0;flex:1;overflow-y:auto}
+    .install-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:all .2s}
+    .install-card:hover{border-color:var(--border2)}
+    .install-card .ic-icon{font-size:28px;flex-shrink:0}
+    .install-card .ic-info{flex:1;min-width:0}
+    .install-card .ic-label{font-weight:600;font-size:14px}
+    .install-card .ic-path{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .install-card .ic-status{font-size:11px;margin-top:2px}
+    .install-card .ic-actions{display:flex;gap:6px;flex-shrink:0}
+    .status-healthy{color:var(--green)}.status-missing{color:var(--amber)}.status-broken{color:var(--red)}
+
+    /* ── Completion ── */
+    .complete{text-align:center;padding:20px 0}
+    .complete .check{font-size:64px;margin-bottom:12px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
+    .complete h2{font-size:22px;font-weight:700;margin-bottom:4px}
+    .complete p{color:var(--dim);font-size:13px}
+    @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+
+    .shortcut-row{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0;font-size:13px}
+    .toggle{width:42px;height:22px;border-radius:22px;border:none;position:relative;transition:all .2s;cursor:pointer;flex-shrink:0}
+    .toggle.on{background:var(--green)}.toggle.off{background:var(--border)}
+    .toggle-dot{width:16px;height:16px;border-radius:50%;position:absolute;top:3px;transition:all .2s}
+    .toggle.on .toggle-dot{left:23px;background:var(--bg)}.toggle.off .toggle-dot{left:3px;background:var(--dim)}
+
+    /* ── Drive missing ── */
+    .drive-missing-icon{font-size:56px;margin-bottom:16px;animation:wobble 2s ease-in-out infinite}
+    @keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+
+    /* ── Confetti ── */
+    .confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;overflow:hidden}
+    .confetti{position:absolute;width:8px;height:8px;border-radius:2px;animation:fall linear forwards}
+    @keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+    /* ── Screens ── */
+    .screen{display:none;flex-direction:column;flex:1;min-height:0}
+    .screen.visible{display:flex}
+  </style>
+</head>
+<body>
+  <div class="titlebar"></div>
+  <div class="app" id="app"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const STEPS = [
+      { id: 1,  name: 'System Check',    icon: '🔍' },
+      { id: 2,  name: 'Homebrew',         icon: '🍺' },
+      { id: 3,  name: 'Node.js',          icon: '⬢'  },
+      { id: 4,  name: 'Install Location', icon: '📁' },
+      { id: 5,  name: 'Data Migration',   icon: '🔄' },
+      { id: 6,  name: 'Directory Setup',  icon: '🏗️' },
+      { id: 7,  name: 'OpenClaw Gateway', icon: '⚡' },
+      { id: 8,  name: 'Dashboard Setup',  icon: '📊' },
+      { id: 9,  name: 'Configuration',    icon: '⚙️' },
+      { id: 10, name: 'Launching',        icon: '🚀' },
+    ];
+
+    function Confetti() {
+      const colors = ['#4ade80','#93c5fd','#c4b5fd','#fbbf24','#f87171','#e4e4e7'];
+      const pieces = Array.from({length: 50}, (_, i) => ({
+        id: i, left: Math.random()*100, delay: Math.random()*2, duration: 2+Math.random()*2,
+        color: colors[Math.floor(Math.random()*colors.length)], size: 6+Math.random()*6
+      }));
+      return (
+        <div className="confetti-container">
+          {pieces.map(p => (
+            <div key={p.id} className="confetti" style={{
+              left:`${p.left}%`, width:`${p.size}px`, height:`${p.size}px`,
+              background:p.color, animationDelay:`${p.delay}s`, animationDuration:`${p.duration}s`
+            }}/>
+          ))}
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════════════════════════ */
+    function InstallerApp() {
+      // Screens: welcome | manager | drive-missing | location | migration | installing | complete
+      const [screen, setScreen] = useState('loading');
+      const [appState, setAppState] = useState(null);
+      const [steps, setSteps] = useState(STEPS.map(s => ({...s, status:'pending', message:''})));
+      const [currentStep, setCurrentStep] = useState(0);
+      const [percent, setPercent] = useState(0);
+      const [logs, setLogs] = useState([]);
+      const [locations, setLocations] = useState(null);
+      const [selectedLoc, setSelectedLoc] = useState(null);
+      const [existingData, setExistingData] = useState(null);
+      const [migration, setMigration] = useState('fresh');
+      const [shortcutOn, setShortcutOn] = useState(true);
+      const [error, setError] = useState(null);
+      const termRef = useRef(null);
+
+      /* ── Auto-scroll terminal ───────────────────────────────── */
+      useEffect(() => {
+        if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
+      }, [logs]);
+
+      /* ── Load initial state from main process ───────────────── */
+      useEffect(() => {
+        if (!window.electronAPI) { setScreen('welcome'); return; }
+
+        (async () => {
+          const state = await window.electronAPI.getAppState();
+          setAppState(state);
+
+          switch (state?.mode) {
+            case 'MANAGER':
+              setScreen('manager');
+              break;
+            case 'DRIVE_MISSING':
+              setScreen('drive-missing');
+              break;
+            case 'INSTALLER':
+            default:
+              setScreen('welcome');
+              break;
+            // DASHBOARD mode is handled by main.js directly — we never see it here
+          }
+        })();
+      }, []);
+
+      /* ── IPC listeners ──────────────────────────────────────── */
+      useEffect(() => {
+        if (!window.electronAPI) return;
+        const unP = window.electronAPI.onProgress((data) => {
+          setCurrentStep(data.step);
+          setPercent(data.percent);
+          setSteps(prev => prev.map(s => {
+            if (s.id === data.step) return {...s, status: data.status === 'done' ? 'done' : data.status === 'error' ? 'error' : 'active', message: data.message};
+            if (s.id < data.step) return {...s, status: s.status === 'error' ? 'error' : 'done'};
+            return s;
+          }));
+          if (data.step === 10 && data.status === 'done') setScreen('complete');
+        });
+        const unL = window.electronAPI.onLogLine((line) => {
+          setLogs(prev => { const n = [...prev, line]; return n.length > 200 ? n.slice(-150) : n; });
+        });
+        return () => { unP(); unL(); };
+      }, []);
+
+      /* ── New install flow ───────────────────────────────────── */
+      const beginNewInstall = useCallback(async () => {
+        setLogs([]); setPercent(0); setError(null);
+        if (window.electronAPI) {
+          const locs = await window.electronAPI.getInstallLocations();
+          setLocations(locs);
+          setSelectedLoc(locs.drives.length > 0 ? locs.drives[0] : locs.currentFolder);
+          setScreen('location');
+        }
+      }, []);
+
+      const confirmLocation = useCallback(async () => {
+        if (!selectedLoc) return;
+        if (window.electronAPI) {
+          const data = await window.electronAPI.getExistingDataInfo(selectedLoc.path);
+          if (data.hasMacData || data.hasDriveData) {
+            setExistingData(data);
+            setScreen('migration');
+            return;
+          }
+        }
+        startWithOptions(selectedLoc, 'fresh');
+      }, [selectedLoc]);
+
+      const confirmMigration = useCallback(() => {
+        startWithOptions(selectedLoc, migration);
+      }, [selectedLoc, migration]);
+
+      const startWithOptions = useCallback(async (location, migrationChoice) => {
+        setScreen('installing');
+        setSteps(STEPS.map(s => ({...s, status:'pending', message:''})));
+        if (window.electronAPI) {
+          const result = await window.electronAPI.startInstall({ location, migration: migrationChoice });
+          if (!result.success) setError(result.error);
+        }
+      }, []);
+
+      /* ── Launch an existing install ─────────────────────────── */
+      const launchExisting = useCallback(async (baseDir) => {
+        if (!window.electronAPI) return;
+        const result = await window.electronAPI.launchInstall(baseDir);
+        if (!result.success) {
+          setError(result.error);
+        }
+      }, []);
+
+      /* ── Forget an install ──────────────────────────────────── */
+      const forgetInstall = useCallback(async (baseDir) => {
+        if (!window.electronAPI) return;
+        const newState = await window.electronAPI.forgetInstall(baseDir);
+        setAppState(newState);
+        if (newState.installs.length === 0) setScreen('welcome');
+      }, []);
+
+      /* ── Retry / rescan drives ──────────────────────────────── */
+      const rescanDrives = useCallback(async () => {
+        if (!window.electronAPI) return;
+        const newState = await window.electronAPI.rescanInstalls();
+        setAppState(newState);
+        const healthy = newState.installs.filter(i => i.healthy);
+        if (healthy.length === 1 && newState.installs.every(i => i.healthy || !i.reachable === false)) {
+          // Drive reconnected — launch it
+          launchExisting(healthy[0].baseDir);
+        } else if (healthy.length > 0) {
+          setScreen('manager');
+        }
+        // If still missing, stay on drive-missing screen
+      }, []);
+
+      /* ── Launch dashboard after complete ────────────────────── */
+      const launchDashboard = useCallback(async () => {
+        if (shortcutOn && window.electronAPI) await window.electronAPI.createShortcut();
+        if (window.electronAPI) await window.electronAPI.launchDashboard();
+      }, [shortcutOn]);
+
+      /* ── Go to manager from other screens ───────────────────── */
+      const goToManager = useCallback(() => {
+        if (appState?.installs?.length > 0) setScreen('manager');
+        else setScreen('welcome');
+      }, [appState]);
+
+      /* ════════════════════════════════════════════════════════════ */
+      /*  RENDER                                                      */
+      /* ════════════════════════════════════════════════════════════ */
+      return (
+        <>
+          {/* ── Loading ──────────────────────────────────────────── */}
+          <div className={`screen ${screen === 'loading' ? 'visible' : ''}`}>
+            <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <div className="hero">
+                <div className="bolt">⚡</div>
+                <p style={{color:'var(--dim)'}}>Loading...</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Welcome (no installs found) ──────────────────────── */}
+          <div className={`screen ${screen === 'welcome' ? 'visible' : ''}`}>
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+              <div className="hero">
+                <div className="bolt">⚡</div>
+                <h1>QuickClaw</h1>
+                <p>The fastest way to set up OpenClaw on your Mac</p>
+              </div>
+              <div style={{marginTop:24}}>
+                <button className="btn btn-green" onClick={beginNewInstall}>
+                  Get Started
+                </button>
+              </div>
+              <p style={{color:'var(--dim)',fontSize:11,marginTop:16,textAlign:'center',maxWidth:360}}>
+                This will install Homebrew (if needed), Node.js, and OpenClaw — then launch your personal dashboard.
+              </p>
+            </div>
+          </div>
+
+          {/* ── Manager (list all installs) ──────────────────────── */}
+          <div className={`screen ${screen === 'manager' ? 'visible' : ''}`}>
+            <div className="hero" style={{marginBottom:16}}>
+              <div className="bolt" style={{fontSize:28}}>⚡</div>
+              <h1 style={{fontSize:20}}>Your Installs</h1>
+              <p>Choose an installation to launch, or set up a new one</p>
+            </div>
+            <div className="install-list">
+              {appState?.installs?.map(inst => (
+                <div key={inst.baseDir} className="install-card">
+                  <div className="ic-icon">{inst.reachable ? (inst.healthy ? '💾' : '🔧') : '⏏️'}</div>
+                  <div className="ic-info">
+                    <div className="ic-label">{inst.label || 'QuickClaw'}</div>
+                    <div className="ic-path">{inst.baseDir}</div>
+                    <div className={`ic-status ${inst.healthy ? 'status-healthy' : inst.reachable ? 'status-broken' : 'status-missing'}`}>
+                      {inst.healthy ? '● Ready' : inst.reachable ? '● Needs repair' : '● Drive not connected'}
+                    </div>
+                  </div>
+                  <div className="ic-actions">
+                    {inst.healthy && (
+                      <button className="btn btn-green btn-sm" onClick={() => launchExisting(inst.baseDir)}>
+                        Launch
+                      </button>
+                    )}
+                    {inst.reachable && !inst.healthy && (
+                      <button className="btn btn-primary btn-sm" onClick={() => {
+                        setSelectedLoc({ name: inst.label, path: inst.baseDir, type: 'external' });
+                        startWithOptions({ name: inst.label, path: inst.baseDir, type: 'external' }, 'keep-all');
+                      }}>
+                        Repair
+                      </button>
+                    )}
+                    {!inst.reachable && (
+                      <button className="btn btn-ghost btn-sm" onClick={() => forgetInstall(inst.baseDir)}>
+                        Forget
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="actions" style={{marginTop:12}}>
+              <button className="btn btn-ghost" onClick={rescanDrives}>
+                🔄 Rescan Drives
+              </button>
+              <button className="btn btn-green" onClick={beginNewInstall}>
+                + New Install
+              </button>
+            </div>
+          </div>
+
+          {/* ── Drive Missing ────────────────────────────────────── */}
+          <div className={`screen ${screen === 'drive-missing' ? 'visible' : ''}`}>
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+              <div className="drive-missing-icon">💾</div>
+              <h1 style={{fontSize:22,fontWeight:700,marginBottom:8}}>Drive Not Connected</h1>
+              <p style={{color:'var(--dim)',fontSize:13,textAlign:'center',maxWidth:380,lineHeight:1.6}}>
+                Your OpenClaw installation lives on an external drive that isn't plugged in right now.
+                Plug it in and click Retry, or set up a new install.
+              </p>
+              {appState?.installs?.filter(i => !i.reachable).map(inst => (
+                <div key={inst.baseDir} style={{
+                  marginTop:12, padding:'8px 16px', borderRadius:8,
+                  background:'var(--surface)', border:'1px solid var(--border)',
+                  fontSize:11, fontFamily:'JetBrains Mono, monospace', color:'var(--dim)'
+                }}>
+                  {inst.label} — {inst.baseDir}
+                </div>
+              ))}
+              <div className="actions" style={{marginTop:24}}>
+                <button className="btn btn-green" onClick={rescanDrives}>
+                  🔄 Retry
+                </button>
+                <button className="btn btn-ghost" onClick={beginNewInstall}>
+                  New Install
+                </button>
+              </div>
+              {appState?.installs?.some(i => i.healthy) && (
+                <button className="btn btn-ghost btn-sm" style={{marginTop:12}} onClick={() => setScreen('manager')}>
+                  View all installs
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Location Picker ──────────────────────────────────── */}
+          <div className={`screen ${screen === 'location' ? 'visible' : ''}`}>
+            <div className="hero" style={{marginBottom:20}}>
+              <h1 style={{fontSize:20}}>Where should we install?</h1>
+              <p>Pick an external drive for full portability, or install locally</p>
+            </div>
+            <div className="loc-grid">
+              {locations?.drives.map(d => (
+                <div key={d.path}
+                  className={`loc-card ${selectedLoc?.path === d.path ? 'selected' : ''}`}
+                  onClick={() => setSelectedLoc(d)}>
+                  <div className="icon">💾</div>
+                  <div className="name">{d.name}</div>
+                  <div className="path">{d.path}</div>
+                </div>
+              ))}
+              {locations && (
+                <div
+                  className={`loc-card ${selectedLoc?.path === locations.currentFolder.path ? 'selected' : ''}`}
+                  onClick={() => setSelectedLoc(locations.currentFolder)}>
+                  <div className="icon">💻</div>
+                  <div className="name">This Mac</div>
+                  <div className="path">Current folder</div>
+                </div>
+              )}
+            </div>
+            <div className="actions">
+              <button className="btn btn-ghost" onClick={goToManager}>Back</button>
+              <button className="btn btn-green" onClick={confirmLocation} disabled={!selectedLoc}>
+                Install Here →
+              </button>
+            </div>
+          </div>
+
+          {/* ── Migration ────────────────────────────────────────── */}
+          <div className={`screen ${screen === 'migration' ? 'visible' : ''}`}>
+            <div className="hero" style={{marginBottom:16}}>
+              <h1 style={{fontSize:20}}>Existing Data Found</h1>
+              <p>We found previous OpenClaw data. What would you like to do?</p>
+            </div>
+            <div className="migrate-opts">
+              {[
+                { id:'fresh', label:'Fresh Start', desc:'Wipe everything for a clean install (recommended)' },
+                { id:'keep-drive', label:'Keep Drive Data', desc:"Clear Mac data, keep what's on the drive" },
+                ...(existingData?.hasMacData && !existingData?.hasDriveData
+                  ? [{ id:'migrate', label:'Migrate Mac → Drive', desc:'Move your Mac data to the external drive' }] : []),
+                { id:'keep-all', label:'Keep Everything', desc:"Don't touch any existing data" },
+              ].map(opt => (
+                <div key={opt.id}
+                  className={`migrate-opt ${migration === opt.id ? 'selected' : ''}`}
+                  onClick={() => setMigration(opt.id)}>
+                  <div className="label">{opt.label}</div>
+                  <div className="desc">{opt.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div className="actions">
+              <button className="btn btn-ghost" onClick={() => setScreen('location')}>Back</button>
+              <button className="btn btn-green" onClick={confirmMigration}>Continue →</button>
+            </div>
+          </div>
+
+          {/* ── Installing ───────────────────────────────────────── */}
+          <div className={`screen ${screen === 'installing' ? 'visible' : ''}`}>
+            <div className="hero" style={{marginBottom:16}}>
+              <h1 style={{fontSize:18}}>Setting Up QuickClaw</h1>
+            </div>
+            <div className="progress-wrap">
+              <div className="progress-label">
+                <span>Step {currentStep}/{STEPS.length}</span>
+                <span>{percent}%</span>
+              </div>
+              <div className="progress-bar"><div className="progress-fill" style={{width:`${percent}%`}}/></div>
+            </div>
+            <div className="steps">
+              {steps.map(s => (
+                <div key={s.id} className={`step ${s.status === 'active' ? 'active' : ''} ${s.status === 'done' ? 'done' : ''} ${s.status === 'error' ? 'error' : ''}`}>
+                  <div className="step-icon">
+                    {s.status === 'done' ? '✓' : s.status === 'error' ? '✕' : s.status === 'active' ? '•' : s.id}
+                  </div>
+                  <div className="step-content">
+                    <div className="step-name">{s.icon} {s.name}</div>
+                    {s.message && <div className="step-msg">{s.message}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="terminal" ref={termRef}>
+              {logs.length === 0 ? '$ Waiting to start...\n' : ''}
+              {logs.map((l, i) => <div key={i}>{'$ '+l}</div>)}
+            </div>
+            {error && (
+              <div style={{textAlign:'center',padding:12,color:'var(--red)',fontSize:13}}>
+                Error: {error}<br/>
+                <button className="btn btn-ghost" style={{marginTop:8}} onClick={beginNewInstall}>Retry</button>
+              </div>
+            )}
+          </div>
+
+          {/* ── Complete ─────────────────────────────────────────── */}
+          <div className={`screen ${screen === 'complete' ? 'visible' : ''}`}>
+            <Confetti />
+            <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+              <div className="complete">
+                <div className="check">✅</div>
+                <h2>You're All Set!</h2>
+                <p>QuickClaw has been installed successfully.</p>
+              </div>
+              <div className="shortcut-row">
+                <span>Add to Desktop?</span>
+                <button className={`toggle ${shortcutOn ? 'on' : 'off'}`} onClick={() => setShortcutOn(v => !v)}>
+                  <div className="toggle-dot"/>
+                </button>
+              </div>
+              <div className="actions" style={{marginTop:16}}>
+                <button className="btn btn-green" onClick={launchDashboard}>🚀 Launch Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('app')).render(<InstallerApp />);
+  </script>
+</body>
+</html>

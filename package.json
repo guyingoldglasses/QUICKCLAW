@@ -1,0 +1,57 @@
+{
+  "name": "quickclaw",
+  "version": "1.0.0",
+  "description": "QuickClaw — The fastest way to install and run OpenClaw on macOS",
+  "author": "GuyInGoldGlasses.com",
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac",
+    "dist:dmg": "electron-builder --mac dmg",
+    "dist:zip": "electron-builder --mac zip"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.guyingoldglasses.quickclaw",
+    "productName": "QuickClaw",
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "title": "QuickClaw Installer",
+      "contents": [
+        { "x": 130, "y": 220, "type": "file" },
+        { "x": 370, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "files": [
+      "electron/**/*",
+      "installer-ui/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "dashboard-files",
+        "to": "dashboard-files",
+        "filter": ["**/*", "!node_modules/**"]
+      },
+      {
+        "from": "QuickClaw_Stop.command",
+        "to": "scripts/QuickClaw_Stop.command"
+      }
+    ]
+  }
+}

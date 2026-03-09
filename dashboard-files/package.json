@@ -1,0 +1,1 @@
+{"name":"quickclaw-v3-dashboard","private":true,"scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.2"}}
