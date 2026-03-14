@@ -93,20 +93,28 @@
       <!-- Step 2 -->
       <div class="step">
         <div class="step-number">2</div>
-        <h3>Open QuickClaw</h3>
-        <p>Open <strong>QuickClaw</strong> from your Applications folder. If macOS opens it normally, skip to Step 3. If macOS says the app is "damaged" or from an "unidentified developer," use the fix below.</p>
+        <h3>Allow QuickClaw to Open</h3>
+        <p>macOS will show a security warning the first time you open QuickClaw. This is normal and only happens once. Use one of these methods:</p>
         <div class="tip">
-          <div class="tip-label">&#9888;&#65039; macOS blocking the app?</div>
+          <div class="tip-label">Option A — Right-click to Open (easiest)</div>
+          <p>Find <strong>QuickClaw</strong> in your Applications folder. <strong>Right-click</strong> (or <strong>Control-click</strong>) the app and choose <strong>Open</strong>. A dialog will appear — click <strong>Open</strong> to launch it.</p>
+        </div>
+        <div class="tip" style="margin-top:12px;">
+          <div class="tip-label">Option B — System Settings</div>
+          <p>Double-click QuickClaw (macOS will block it). Then go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down, and click <strong>Open Anyway</strong> next to the QuickClaw message.</p>
+        </div>
+        <div class="tip" style="margin-top:12px;">
+          <div class="tip-label">Option C — Terminal command (most reliable)</div>
           <p>Open <strong>Terminal</strong> (press <strong>Cmd + Space</strong>, type "Terminal", hit Enter) and paste this command:</p>
         </div>
         <div class="cmd-box" onclick="copyCommand(this)">
           <span class="cmd-text">xattr -cr /Applications/QuickClaw.app</span>
           <button class="copy-btn" onclick="copyCommand(this.parentElement); event.stopPropagation();">Copy</button>
         </div>
-        <p style="margin-top:12px;">Press <strong>Enter</strong>, then open QuickClaw again. This is a one-time fix.</p>
-        <div class="tip">
-          <div class="tip-label">&#128161; Why might this happen?</div>
-          <p>macOS quarantines downloaded apps as a security measure. Signed releases open without issue, but if you're building from source or the signing certificate has expired, you'll need this command. It's safe — it just removes the quarantine flag. QuickClaw is <a href="https://github.com/guyingoldglasses/QUICKCLAW" style="color:var(--blue)">fully open-source</a> so you can always verify the code.</p>
+        <p style="margin-top:12px;">Press <strong>Enter</strong>, then open QuickClaw normally. This is a one-time fix.</p>
+        <div class="tip" style="margin-top:12px;">
+          <div class="tip-label">&#128161; Why does this happen?</div>
+          <p>QuickClaw is signed with an Apple Developer certificate but not yet notarized. macOS quarantines apps that aren't notarized as a security measure. Allowing it once is all you need — after that, it opens like any other app. QuickClaw is <a href="https://github.com/guyingoldglasses/QUICKCLAW" style="color:var(--blue)">fully open-source</a> so you can always verify the code.</p>
         </div>
       </div>
 

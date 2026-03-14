@@ -24,13 +24,24 @@ This guide walks you through everything from downloading QuickClaw to having Ope
 2. Open the `.dmg` and drag **QuickClaw** into your **Applications** folder.
 3. Open **QuickClaw** from Applications.
 
-If the app is signed and notarized, it will open without any issues. If macOS shows a warning that the app is "damaged" or from an "unidentified developer" (this can happen if the signing certificate has expired or you built from source), open Terminal and run:
+Because QuickClaw is signed but not yet notarized by Apple, macOS will show a security warning the first time you open it. This is normal and only happens once. Here's how to allow it:
+
+**Option A — Right-click to Open (easiest):**
+Find QuickClaw in your Applications folder. **Right-click** (or **Control-click**) the app and choose **Open** from the menu. A dialog will appear — click **Open** to launch the app.
+
+**Option B — System Settings:**
+Try opening QuickClaw normally (double-click). macOS will block it. Then go to **System Settings → Privacy & Security**, scroll down until you see a message about QuickClaw being blocked, and click **Open Anyway**.
+
+**Option C — Terminal command (most reliable):**
+Open Terminal (press **Cmd + Space**, type "Terminal", hit Enter) and paste:
 
 ```
 xattr -cr /Applications/QuickClaw.app
 ```
 
-Then open QuickClaw again. This is a safe, one-time command that removes the macOS quarantine flag. QuickClaw is [fully open-source](https://github.com/guyingoldglasses/QUICKCLAW) — you can always verify the code yourself.
+Press Enter, then open QuickClaw normally. This removes the macOS quarantine flag.
+
+All three methods are safe, one-time steps. After the first launch, QuickClaw opens like any other app. QuickClaw is [fully open-source](https://github.com/guyingoldglasses/QUICKCLAW) — you can always verify the code yourself.
 
 ---
 
@@ -121,8 +132,8 @@ After installation, QuickClaw can create a macOS alias on your Desktop for quick
 
 ## Troubleshooting
 
-**QuickClaw won't open (macOS blocks it / says "damaged")**
-Open Terminal and run: `xattr -cr /Applications/QuickClaw.app` — then open QuickClaw again. This happens when the app isn't signed or the signing certificate has expired. It's a one-time fix.
+**QuickClaw won't open (macOS shows a security warning)**
+This is normal for the first launch. Right-click the app and choose Open, or go to System Settings → Privacy & Security and click Open Anyway, or open Terminal and run: `xattr -cr /Applications/QuickClaw.app`. You only need to do this once.
 
 **Installation fails at a step**
 Check the terminal log at the bottom of the installer window for specific error messages. Common causes: no internet connection, insufficient disk space, or a corporate firewall blocking downloads.
